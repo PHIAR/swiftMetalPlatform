@@ -1,5 +1,5 @@
 import Dispatch
-import MetalProtocols
+@_exported import MetalProtocols
 
 public let MTLCopyAllDevices = MetalCopyAllDevices
 public let MTLCreateSystemDefaultDevice = MetalCreateSystemDefaultDevice
