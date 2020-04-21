@@ -151,11 +151,11 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeDefaultLibrary() -> Library? {
-        preconditionFailure()
+        return try! VkMetalLibrary()
     }
 
     public func makeDefaultLibrary(bundle: Bundle) throws -> Library {
-        preconditionFailure()
+        return try! VkMetalLibrary()
     }
 
     public func makeEvent() -> Event? {
