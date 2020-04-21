@@ -168,11 +168,11 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(data: __DispatchData) throws -> Library {
-        preconditionFailure()
+        return try! VkMetalLibrary()
     }
 
     public func makeLibrary(filepath: String) throws -> Library {
-        preconditionFailure()
+        return try! VkMetalLibrary()
     }
 
     public func makeLibrary(source: String,

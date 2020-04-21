@@ -14,7 +14,7 @@ internal final class VkMetalLibrary: Library {
 
     public func makeFunction(name: String,
                              constantValues: FunctionConstantValues) throws -> Function {
-        preconditionFailure()
+        return VkMetalFunction()
     }
 
     public func makeFunction(name: String,
