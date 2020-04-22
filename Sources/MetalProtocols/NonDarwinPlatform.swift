@@ -168,9 +168,13 @@ public enum TextureType {
     case type1D
     case type1DArray
     case type2D
+    case type2DMultisample
     case type2DArray
+    case type2DMultisampleArray
     case type3D
     case typeCube
+    case typeCubeArray
+    case typeTextureBuffer
 }
 
 public enum TriangleFillMode {
