@@ -44,6 +44,8 @@ public protocol Device {
     func makeLibrary(source: String,
                      options: CompileOptions?) throws -> Library
 
+    func makeLibrary(spirv: [UInt32]) -> Library
+
     func makeLibrary(URL: URL) throws -> Library
 
     func makeRenderPipelineState(descriptor: RenderPipelineDescriptor) throws -> RenderPipelineState

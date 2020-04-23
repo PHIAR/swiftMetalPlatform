@@ -28,7 +28,6 @@ internal final class VkMetalCommandQueue: VkMetalObject,
         self.deviceQueue = deviceQueue
         self.commandPool = commandPool
         super.init(device: device)
-
         self.commandBuffers = commandPool.allocateCommandBuffers(count: _maxCommandBufferCount).map {
             return VkMetalCommandBuffer(commandQueue: self,
                                         commandBuffer: $0)
