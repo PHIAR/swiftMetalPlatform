@@ -2,7 +2,7 @@ import Dispatch
 import MetalProtocols
 
 internal final class VkMetalLibrary: Library {
-    internal required init(preprocessorOptions: String? = nil) throws {
+    internal required init(spirv: [UInt32]) {
     }
 
     deinit {

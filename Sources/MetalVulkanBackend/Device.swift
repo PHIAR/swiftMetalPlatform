@@ -171,11 +171,15 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeDefaultLibrary() -> Library? {
-        return try! VkMetalLibrary()
+        let spirv: [UInt32] = []
+
+        return VkMetalLibrary(spirv: spirv)
     }
 
     public func makeDefaultLibrary(bundle: Bundle) throws -> Library {
-        return try! VkMetalLibrary()
+        let spirv: [UInt32] = []
+
+        return VkMetalLibrary(spirv: spirv)
     }
 
     public func makeEvent() -> Event? {
@@ -188,29 +192,25 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(data: __DispatchData) throws -> Library {
-        return try! VkMetalLibrary()
+        return data.withUnsafeBytes { (pointer: UnsafePointer <UInt8>) in
+            let spirv = UnsafeBufferPointer(start: UnsafeRawPointer(pointer).assumingMemoryBound(to: UInt32.self),
+                                            count: MemoryLayout <UInt32>.size)
+
+            return self.makeLibrary(spirv: Array(spirv))
+        }
     }
 
     public func makeLibrary(filepath: String) throws -> Library {
-        return try! VkMetalLibrary()
+        return VkMetalLibrary(spirv: [])
     }
 
     public func makeLibrary(source: String,
                             options: CompileOptions?) throws -> Library {
-        var preprocessorOptions: String? = nil
+        preconditionFailure("Use makeLibrary(spirv:) instead.")
+    }
 
-        if let _options = options,
-           let preprocessorMacros = _options.preprocessorMacros {
-            preprocessorOptions = preprocessorMacros.map { "-D\($0.0)=\($0.1) " }.reduce("", +)
-        }
-
-        let library: VkMetalLibrary = try source.withCString {
-            var _source: UnsafePointer <Int8>? = $0
-
-            return try VkMetalLibrary(preprocessorOptions: preprocessorOptions)
-        }
-
-        return library
+    public func makeLibrary(spirv: [UInt32]) -> Library {
+        return VkMetalLibrary(spirv: spirv)
     }
 
     public func makeLibrary(URL: URL) throws -> Library {
@@ -249,7 +249,7 @@ extension VkMetalDevice: CustomStringConvertible {
 }
 
 public extension Device {
-    public var vulkanInstance: VulkanInstance? {
+    var vulkanInstance: VulkanInstance? {
         return self as? VulkanInstance
     }
 }
