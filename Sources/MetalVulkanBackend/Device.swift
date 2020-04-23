@@ -30,6 +30,8 @@ internal final class VkMetalDevice: Device {
     }()
 
     private let deviceMemBaseAddrAlign: Int
+    private let queueFamily: Int
+    private let deviceQueue: VulkanQueue
 
     internal let physicalDevice: VulkanPhysicalDevice
     internal let device: VulkanDevice
@@ -89,16 +91,19 @@ internal final class VkMetalDevice: Device {
         self.deviceMemBaseAddrAlign = Int(physicalDeviceProperties.limits.minMemoryMapAlignment)
 
         let queueFamilyProperties = physicalDevice.getQueueFamilyProperties()
-        let queue = 0
+        let queueFamily = 0
 
         precondition(!queueFamilyProperties.isEmpty)
 
-        let device = physicalDevice.createDevice(queues: [ queue ],
+        let device = physicalDevice.createDevice(queues: [ queueFamily ],
                                                  layerNames: [],
                                                  extensions: [])
 
         self.physicalDevice = physicalDevice
         self.device = device
+        self.queueFamily = queueFamily
+        self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamily,
+                                                 queue: 0)
     }
 
     deinit {
@@ -147,7 +152,12 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeCommandQueue(maxCommandBufferCount: Int) -> CommandQueue? {
-        return VkMetalCommandQueue(device: self)
+        let commandPool = self.device.createCommandPool(queue: self.queueFamily)
+
+        return VkMetalCommandQueue(device: self,
+                                   deviceQueue: self.deviceQueue,
+                                   commandPool: commandPool,
+                                   maxCommandBufferCount: maxCommandBufferCount)
     }
 
     public func makeComputePipelineState(function: Function) throws -> ComputePipelineState {

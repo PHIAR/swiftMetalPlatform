@@ -1,3 +1,4 @@
+import swiftVulkan
 import Dispatch
 import MetalProtocols
 
@@ -19,7 +20,8 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         return self.vkCommandQueue
     }
 
-    internal init(commandQueue: VkMetalCommandQueue) {
+    internal init(commandQueue: VkMetalCommandQueue,
+                  commandBuffer: VulkanCommandBuffer) {
         self.vkCommandQueue = commandQueue
         super.init(device: commandQueue.vkDevice)
         self.scheduledGroup.enter()
