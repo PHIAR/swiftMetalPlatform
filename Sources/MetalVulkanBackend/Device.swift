@@ -16,7 +16,17 @@ internal func MetalCreateSystemDefaultDevice() -> Device? {
 
 internal final class VkMetalDevice: Device {
     internal static let instance: VulkanInstance? = {
-        return VulkanInstance()
+        var extensions = [
+            "VK_KHR_surface",
+        ]
+
+    #if os(Android)
+        extensions.append("VK_KHR_android_surface")
+    #elseif os(Linux)
+        extensions.append("VK_KHR_xlib_surface")
+    #endif
+
+        return VulkanInstance(extensions: extensions)
     }()
 
     private let deviceMemBaseAddrAlign: Int
@@ -225,5 +235,11 @@ internal final class VkMetalDevice: Device {
 extension VkMetalDevice: CustomStringConvertible {
     var description: String {
         return ""
+    }
+}
+
+public extension Device {
+    public var vulkanInstance: VulkanInstance? {
+        return self as? VulkanInstance
     }
 }
