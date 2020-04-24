@@ -7,19 +7,26 @@ var targets: [Target] = []
 
 // MARK - Metal
 
+let spirvCrossTarget = Target.systemLibrary(name: "SPIRVCross")
+let spirvReflectTarget = Target.target(name: "SPIRVReflect")
 let metalProtocolsTarget = Target.target(name: "MetalProtocols",
                                          dependencies: [])
 let metalTarget = Target.target(name: "Metal",
                                 dependencies: [
-    "MetalProtocols",
     "swiftVulkan",
+    "MetalProtocols",
+    "SPIRVCross",
+    "SPIRVReflect",
 ],
                                 path: "Sources/MetalVulkanBackend")
 let metalTestTarget = Target.testTarget(name: "swiftMetalPlatformTests",
                                         dependencies: [
+    "SPIRVCross",
     "Metal",
 ])
 
+targets.append(spirvCrossTarget)
+targets.append(spirvReflectTarget)
 targets.append(metalProtocolsTarget)
 targets.append(metalTarget)
 targets.append(metalTestTarget)
@@ -39,4 +46,3 @@ let package = Package(name: "swiftMetalPlatform",
              .branch("master")),
 ],
                       targets: targets)
-

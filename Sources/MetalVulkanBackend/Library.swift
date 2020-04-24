@@ -19,17 +19,20 @@ internal final class VkMetalLibrary: Library {
     }
 
     public func makeFunction(name: String) -> Function? {
-        return VkMetalFunction()
+        return VkMetalFunction(library: self,
+                               name: name)
     }
 
     public func makeFunction(name: String,
                              constantValues: FunctionConstantValues) throws -> Function {
-        return VkMetalFunction()
+        return VkMetalFunction(library: self,
+                               name: name,
+                               constantValues: constantValues)
     }
 
     public func makeFunction(name: String,
                              constantValues: FunctionConstantValues,
                              completionHandler: @escaping (Function?, Error?) -> Void) {
-        completionHandler(nil, nil)
+        preconditionFailure()
     }
 }

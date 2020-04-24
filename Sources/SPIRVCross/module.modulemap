@@ -1,0 +1,3 @@
+module SPIRVCross {
+    link "spirv-cross-core"
+}

@@ -1,5 +1,6 @@
 import Foundation
 import Metal
+import SPIRVCross
 import XCTest
 
 internal final class swiftMetalPlatformTests: XCTestCase {
