@@ -5,27 +5,27 @@ import MetalProtocols
 
 internal final class VkMetalLibrary: Library {
     private let device: VkMetalDevice
-    private let shaderModule: VulkanShaderModule
+    private let spirv: [UInt32]
 
     internal required init(device: VkMetalDevice,
                            spirv: [UInt32]) {
-        let shaderModule = device.device.createShaderModule(code: spirv.withUnsafeBufferPointer { Data(buffer: $0) })
-
         self.device = device
-        self.shaderModule = shaderModule
+        self.spirv = spirv
     }
 
     deinit {
     }
 
     public func makeFunction(name: String) -> Function? {
-        return VkMetalFunction(library: self,
+        return VkMetalFunction(device: self.device.device,
+                               spirv: self.spirv,
                                name: name)
     }
 
     public func makeFunction(name: String,
                              constantValues: FunctionConstantValues) throws -> Function {
-        return VkMetalFunction(library: self,
+        return VkMetalFunction(device: self.device.device,
+                               spirv: self.spirv,
                                name: name,
                                constantValues: constantValues)
     }

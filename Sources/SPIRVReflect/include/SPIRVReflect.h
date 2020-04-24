@@ -3,21 +3,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <vulkan/vulkan.h>
 
-typedef struct spirv_descriptor_set_t {
-} spirv_descriptor_set_t;
+typedef struct spirv_descriptor_set_layout_t {
+    VkDescriptorSetLayoutBinding *bindings;
+    size_t bindingCount;
+} spirv_descriptor_set_layout_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 bool
-spirvReflectCreateDescriptorSet(uint32_t const *code,
-                                size_t length,
-                                spirv_descriptor_set_t *descriptor_set);
+spirvReflectCreateDescriptorSetLayout(uint32_t const *code,
+                                      size_t length,
+                                      spirv_descriptor_set_layout_t *descriptor_set_layout);
 
 void
-spirvReflectDestroyDescriptorSet(spirv_descriptor_set_t *descriptor_set);
+spirvReflectDestroyDescriptorSetLayout(spirv_descriptor_set_layout_t *descriptor_set_layout);
 
 #ifdef __cplusplus
 }
