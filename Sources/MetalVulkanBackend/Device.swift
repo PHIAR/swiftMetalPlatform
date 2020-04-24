@@ -173,13 +173,15 @@ internal final class VkMetalDevice: Device {
     public func makeDefaultLibrary() -> Library? {
         let spirv: [UInt32] = []
 
-        return VkMetalLibrary(spirv: spirv)
+        return VkMetalLibrary(device: self,
+                              spirv: spirv)
     }
 
     public func makeDefaultLibrary(bundle: Bundle) throws -> Library {
         let spirv: [UInt32] = []
 
-        return VkMetalLibrary(spirv: spirv)
+        return VkMetalLibrary(device: self,
+                              spirv: spirv)
     }
 
     public func makeEvent() -> Event? {
@@ -201,7 +203,11 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(filepath: String) throws -> Library {
-        return VkMetalLibrary(spirv: [])
+        let _data = try Data(contentsOf: URL(fileURLWithPath: filepath))
+        let data = _data.withUnsafeBytes { DispatchData(bytes: UnsafeRawBufferPointer(start: $0.baseAddress!,
+                                                                                      count: _data.count)) }
+
+        return try self.makeLibrary(data: data)
     }
 
     public func makeLibrary(source: String,
@@ -210,11 +216,16 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(spirv: [UInt32]) -> Library {
-        return VkMetalLibrary(spirv: spirv)
+        return VkMetalLibrary(device: self,
+                              spirv: spirv)
     }
 
     public func makeLibrary(URL: URL) throws -> Library {
-        preconditionFailure()
+        let _data = try Data(contentsOf: URL)
+        let data = _data.withUnsafeBytes { DispatchData(bytes: UnsafeRawBufferPointer(start: $0.baseAddress!,
+                                                                                      count: _data.count)) }
+
+        return try self.makeLibrary(data: data)
     }
 
     public func makeRenderPipelineState(descriptor: RenderPipelineDescriptor) throws -> RenderPipelineState {

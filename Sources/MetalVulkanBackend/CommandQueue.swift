@@ -21,7 +21,6 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                   deviceQueue: VulkanQueue,
                   commandPool: VulkanCommandPool,
                   maxCommandBufferCount: Int) {
-        var commandBuffers: [VulkanCommandBuffer] = []
         let _maxCommandBufferCount = (maxCommandBufferCount == 0) ? VkMetalCommandQueue.maxCommandBufferCount :
                                                                     maxCommandBufferCount
 
