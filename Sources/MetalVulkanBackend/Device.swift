@@ -194,7 +194,9 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(data: __DispatchData) throws -> Library {
-        return data.withUnsafeBytes { (pointer: UnsafePointer <UInt8>) in
+        let _data = data as DispatchData
+
+        return _data.withUnsafeBytes { (pointer: UnsafePointer <UInt8>) in
             let spirv = UnsafeBufferPointer(start: UnsafeRawPointer(pointer).assumingMemoryBound(to: UInt32.self),
                                             count: MemoryLayout <UInt32>.size)
 
@@ -205,7 +207,7 @@ internal final class VkMetalDevice: Device {
     public func makeLibrary(filepath: String) throws -> Library {
         let _data = try Data(contentsOf: URL(fileURLWithPath: filepath))
         let data = _data.withUnsafeBytes { DispatchData(bytes: UnsafeRawBufferPointer(start: $0.baseAddress!,
-                                                                                      count: _data.count)) }
+                                                                                      count: _data.count)) as __DispatchData }
 
         return try self.makeLibrary(data: data)
     }
@@ -223,7 +225,7 @@ internal final class VkMetalDevice: Device {
     public func makeLibrary(URL: URL) throws -> Library {
         let _data = try Data(contentsOf: URL)
         let data = _data.withUnsafeBytes { DispatchData(bytes: UnsafeRawBufferPointer(start: $0.baseAddress!,
-                                                                                      count: _data.count)) }
+                                                                                      count: _data.count)) as __DispatchData }
 
         return try self.makeLibrary(data: data)
     }

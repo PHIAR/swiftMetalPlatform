@@ -1,4 +1,5 @@
 import swiftVulkan
+import CoreFoundation
 import Dispatch
 import MetalProtocols
 
