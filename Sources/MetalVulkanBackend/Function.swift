@@ -1,4 +1,5 @@
 import MetalProtocols
+import SPIRVCross
 import SPIRVReflect
 
 internal final class VkMetalFunction: Function {
