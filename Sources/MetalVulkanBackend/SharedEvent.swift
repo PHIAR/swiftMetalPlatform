@@ -7,7 +7,7 @@ internal final class VkMetalSharedEvent: VkMetalEvent,
 
     public var signaledValue: UInt64 {
         get {
-            return 0
+            return self.semaphore.getCounterValue()
         }
 
         set {
@@ -17,7 +17,6 @@ internal final class VkMetalSharedEvent: VkMetalEvent,
     public override init(device: VkMetalDevice) {
         self.semaphore = device.device.createSemaphore()
         super.init(device: device)
-        preconditionFailure()
     }
 
     public func makeSharedEventHandle() -> SharedEventHandle {
