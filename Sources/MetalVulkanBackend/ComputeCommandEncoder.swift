@@ -1,8 +1,10 @@
+import vulkan
+import swiftVulkan
 import MetalProtocols
 
 internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
                                                    ComputeCommandEncoder {
-    var vkComputePipelineState: VkMetalComputePipelineState? = nil
+    private var computePipelineState: VkMetalComputePipelineState? = nil
 
     public func dispatchThreadgroups(_ threadgroupsPerGrid: Size,
                                      threadsPerThreadgroup: Size) {
@@ -28,7 +30,12 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setComputePipelineState(_ state: ComputePipelineState) {
-        self.vkComputePipelineState = state as? VkMetalComputePipelineState
+        let computePipelineState = state as! VkMetalComputePipelineState
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.bindPipeline(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
+                                   pipeline: computePipelineState.getPipeline())
+        self.computePipelineState = computePipelineState
     }
 
     public func setTexture(_ texture: Texture?,

@@ -11,22 +11,28 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         case submitted
     }
 
-    internal let vkCommandQueue: VkMetalCommandQueue
+    private let _commandQueue: VkMetalCommandQueue
+    private let commandBuffer: VulkanCommandBuffer
     private var state = State.recording
     private let executionQueue = DispatchQueue(label: "VkMetalCommandBuffer.executionQueue")
     private let scheduledGroup = DispatchGroup()
     private let completionGroup = DispatchGroup()
 
     public var commandQueue: CommandQueue {
-        return self.vkCommandQueue
+        return self._commandQueue
     }
 
     internal init(commandQueue: VkMetalCommandQueue,
                   commandBuffer: VulkanCommandBuffer) {
-        self.vkCommandQueue = commandQueue
+        self._commandQueue = commandQueue
+        self.commandBuffer = commandBuffer
         super.init(device: commandQueue.vkDevice)
         self.scheduledGroup.enter()
         self.completionGroup.enter()
+    }
+
+    internal func getCommandBuffer() -> VulkanCommandBuffer {
+        return self.commandBuffer
     }
 
     public func addCompletedHandler(block: @escaping (CommandBuffer) -> Void) {
