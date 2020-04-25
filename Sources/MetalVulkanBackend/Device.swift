@@ -189,7 +189,7 @@ internal final class VkMetalDevice: Device {
 
             shaders[String(name)] = try Data(contentsOf: shaderURL as URL).withUnsafeBytes {
                 return Array(UnsafeBufferPointer(start: $0.baseAddress!.assumingMemoryBound(to: UInt32.self),
-                                                 count: $0.count))
+                                                 count: $0.count / MemoryLayout <UInt32>.size))
             }
         }
 
