@@ -8,10 +8,23 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
 
     public func dispatchThreadgroups(_ threadgroupsPerGrid: Size,
                                      threadsPerThreadgroup: Size) {
+        let threadsPerGrid = Size(width: threadgroupsPerGrid.width * threadsPerThreadgroup.width,
+                                  height: threadgroupsPerGrid.height * threadsPerThreadgroup.height,
+                                  depth: threadgroupsPerGrid.depth * threadsPerThreadgroup.depth)
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
+                               groupCountY: threadsPerGrid.height,
+                               groupCountZ: threadsPerGrid.depth)
     }
 
     public func dispatchThreads(_ threadsPerGrid: Size,
                                 threadsPerThreadgroup: Size) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
+                               groupCountY: threadsPerGrid.height,
+                               groupCountZ: threadsPerGrid.depth)
     }
 
     public func setBuffer(_ buffer: Buffer?,
