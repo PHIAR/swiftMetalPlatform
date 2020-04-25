@@ -6,15 +6,15 @@ import SPIRVCross
 import SPIRVReflect
 
 internal final class VkMetalFunction: Function {
-    private let name: String
+    private let entryPoint: String
     private let shaderModule: VulkanShaderModule
     private let constantValues: FunctionConstantValues?
     private let descriptorSetLayout: VulkanDescriptorSetLayout
 
     internal convenience init(device: VulkanDevice,
                               spirv: [UInt32],
-                              name: String,
                               constantValues: FunctionConstantValues? = nil) {
+        var entryPoint = ""
         let shaderModule = device.createShaderModule(code: spirv.withUnsafeBufferPointer { Data(buffer: $0) })
         let bindings: [VulkanDescriptorSetLayoutBinding] = spirv.withUnsafeBytes {
             var descriptorSetLayout = spirv_descriptor_set_layout_t()
@@ -23,6 +23,8 @@ internal final class VkMetalFunction: Function {
                                                                 &descriptorSetLayout)
 
             precondition(success)
+
+            entryPoint = String(cString: descriptorSetLayout.entry_point)
 
             let bindings = UnsafeBufferPointer(start: descriptorSetLayout.bindings,
                                                count: descriptorSetLayout.bindingCount).map { binding in
@@ -39,26 +41,38 @@ internal final class VkMetalFunction: Function {
         let _descriptorSetLayout = device.createDescriptorSetLayout(flags: VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT.rawValue,
                                                                     bindings: bindings)
 
-        self.init(name: name,
+        self.init(entryPoint: entryPoint,
                   shaderModule: shaderModule,
                   constantValues: constantValues,
                   descriptorSetLayout:  _descriptorSetLayout)
     }
 
-    internal required init(name: String,
+    internal required init(entryPoint: String,
                            shaderModule: VulkanShaderModule,
                            constantValues: FunctionConstantValues? = nil,
                            descriptorSetLayout: VulkanDescriptorSetLayout) {
-        self.name = name
+        self.entryPoint = entryPoint
         self.shaderModule = shaderModule
         self.constantValues = constantValues
         self.descriptorSetLayout = descriptorSetLayout
     }
 
     public func clone() -> VkMetalFunction? {
-        return VkMetalFunction(name: self.name,
+        return VkMetalFunction(entryPoint: self.entryPoint,
                                shaderModule: self.shaderModule,
                                constantValues: self.constantValues,
                                descriptorSetLayout: self.descriptorSetLayout)
+    }
+
+    public func getDescriptorSetLayout() -> VulkanDescriptorSetLayout {
+        return self.descriptorSetLayout
+    }
+
+    public func getEntryPoint() -> String {
+        return self.entryPoint
+    }
+
+    public func getShaderModule() -> VulkanShaderModule {
+        return self.shaderModule
     }
 }

@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 
 typedef struct spirv_descriptor_set_layout_t {
+    char const *entry_point;
     VkDescriptorSetLayoutBinding *bindings;
     size_t bindingCount;
 } spirv_descriptor_set_layout_t;

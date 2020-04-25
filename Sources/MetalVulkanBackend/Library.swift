@@ -32,8 +32,7 @@ internal final class VkMetalLibrary: Library {
         }
 
         return VkMetalFunction(device: self.device.device,
-                               spirv: spirv,
-                               name: name)
+                               spirv: spirv)
     }
 
     public func makeFunction(name: String,
@@ -44,7 +43,6 @@ internal final class VkMetalLibrary: Library {
 
         return VkMetalFunction(device: self.device.device,
                                spirv: spirv,
-                               name: name,
                                constantValues: constantValues)
     }
 

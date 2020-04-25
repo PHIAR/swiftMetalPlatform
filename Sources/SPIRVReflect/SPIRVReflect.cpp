@@ -22,10 +22,12 @@ spirvReflectCreateDescriptorSetLayout(uint32_t const *code,
     auto const &bindingCount = storageBuffers.size();
     auto &&bindingSlot = 0;
 
+    descriptor_set_layout->entry_point = strdup(entryPoints[0].name.c_str());
     descriptor_set_layout->bindingCount = bindingCount;
     descriptor_set_layout->bindings = static_cast <VkDescriptorSetLayoutBinding *> (malloc(bindingCount * sizeof(VkDescriptorSetLayoutBinding)));
 
     printf("entryPoints: %zu\n", entryPoints.size());
+    assert(entryPoints.size() == 1);
 
     for (auto const &entryPoint: entryPoints) {
         printf("entryPoint: %s\n", entryPoint.name.c_str());
@@ -94,4 +96,9 @@ spirvReflectDestroyDescriptorSetLayout(spirv_descriptor_set_layout_t *descriptor
     }
 
     descriptor_set_layout->bindingCount = 0;
+
+    if (descriptor_set_layout->entry_point) {
+        free(const_cast <char *> (descriptor_set_layout->entry_point));
+        descriptor_set_layout->entry_point = nullptr;
+    }
 }
