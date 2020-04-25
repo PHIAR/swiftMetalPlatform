@@ -1,7 +1,10 @@
+import swiftVulkan
 import MetalProtocols
 
 internal final class VkMetalSharedEvent: VkMetalEvent,
                                          SharedEvent {
+    private let semaphore: VulkanSemaphore
+
     public var signaledValue: UInt64 {
         get {
             return 0
@@ -9,6 +12,12 @@ internal final class VkMetalSharedEvent: VkMetalEvent,
 
         set {
         }
+    }
+
+    public override init(device: VkMetalDevice) {
+        self.semaphore = device.device.createSemaphore()
+        super.init(device: device)
+        preconditionFailure()
     }
 
     public func makeSharedEventHandle() -> SharedEventHandle {
