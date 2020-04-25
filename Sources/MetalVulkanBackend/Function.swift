@@ -16,7 +16,7 @@ internal final class VkMetalFunction: Function {
                               name: String,
                               constantValues: FunctionConstantValues? = nil) {
         let shaderModule = device.createShaderModule(code: spirv.withUnsafeBufferPointer { Data(buffer: $0) })
-        let _ = spirv.withUnsafeBytes {
+        let bindings: [VulkanDescriptorSetLayoutBinding] = spirv.withUnsafeBytes {
             var descriptorSetLayout = spirv_descriptor_set_layout_t()
             let success = spirvReflectCreateDescriptorSetLayout($0.baseAddress!.assumingMemoryBound(to: UInt32.self),
                                                                 spirv.count,
@@ -24,10 +24,20 @@ internal final class VkMetalFunction: Function {
 
             precondition(success)
 
+            let bindings = UnsafeBufferPointer(start: descriptorSetLayout.bindings,
+                                               count: descriptorSetLayout.bindingCount).map { binding in
+                return VulkanDescriptorSetLayoutBinding(binding: Int(binding.binding),
+                                                        descriptorType: binding.descriptorType,
+                                                        descriptorCount: Int(binding.descriptorCount),
+                                                        stageFlags: binding.stageFlags,
+                                                        immutableSamplers: [])
+            }
+
             spirvReflectDestroyDescriptorSetLayout(&descriptorSetLayout)
+            return bindings
         }
         let _descriptorSetLayout = device.createDescriptorSetLayout(flags: VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT.rawValue,
-                                                                    bindings: [])
+                                                                    bindings: bindings)
 
         self.init(name: name,
                   shaderModule: shaderModule,

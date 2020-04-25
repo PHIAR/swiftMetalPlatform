@@ -171,17 +171,30 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeDefaultLibrary() -> Library? {
-        let spirv: [UInt32] = []
-
-        return VkMetalLibrary(device: self,
-                              spirv: spirv)
+        return try? self.makeDefaultLibrary(bundle: Bundle.main)
     }
 
     public func makeDefaultLibrary(bundle: Bundle) throws -> Library {
-        let spirv: [UInt32] = []
+        guard let shaderURLs = bundle.urls(forResourcesWithExtension: "spv",
+                                           subdirectory: nil) else {
+            preconditionFailure()
+        }
+
+        var shaders: [String: [UInt32]] = [:]
+
+        try shaderURLs.forEach { shaderURL in
+            guard let name = shaderURL.lastPathComponent?.split(separator: ".").first else {
+                return
+            }
+
+            shaders[String(name)] = try Data(contentsOf: shaderURL as URL).withUnsafeBytes {
+                return Array(UnsafeBufferPointer(start: $0.baseAddress!.assumingMemoryBound(to: UInt32.self),
+                                                 count: $0.count))
+            }
+        }
 
         return VkMetalLibrary(device: self,
-                              spirv: spirv)
+                              shaders: shaders)
     }
 
     public func makeEvent() -> Event? {
@@ -218,8 +231,12 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeLibrary(spirv: [UInt32]) -> Library {
+        precondition(!spirv.isEmpty)
+
         return VkMetalLibrary(device: self,
-                              spirv: spirv)
+                              shaders: [
+            "": spirv,
+        ])
     }
 
     public func makeLibrary(URL: URL) throws -> Library {
