@@ -176,7 +176,7 @@ internal final class VkMetalDevice: Device {
 
     public func makeDefaultLibrary(bundle: Bundle) throws -> Library {
         guard let shaderURLs = bundle.urls(forResourcesWithExtension: "spv",
-                                           subdirectory: nil) else {
+                                           subdirectory: "spirv") else {
             preconditionFailure()
         }
 
