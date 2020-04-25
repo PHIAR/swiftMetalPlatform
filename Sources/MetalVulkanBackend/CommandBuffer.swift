@@ -30,6 +30,8 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         self.commandBuffer = commandBuffer
         self.index = index
         super.init(device: commandQueue._device)
+
+        commandBuffer.begin()
         self.scheduledGroup.enter()
         self.completionGroup.enter()
     }
@@ -67,6 +69,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func commit() {
+        self.commandBuffer.end()
         self._commandQueue.commit(commandBuffer: self)
     }
 
