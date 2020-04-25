@@ -6,16 +6,16 @@ public protocol VkMetalObjectInterface {
 
 public class VkMetalObject: CustomStringConvertible,
                             VkMetalObjectInterface {
-    internal let vkDevice: VkMetalDevice
+    internal let _device: VkMetalDevice
     internal var debugLabel: String? = nil
 
     public var description: String {
-        return "\(type(of: self)): device: \(self.vkDevice) label: \"" +
+        return "\(type(of: self)): device: \(self.device) label: \"" +
                (self.debugLabel ?? "(none)") + "\""
     }
 
     public var device: Device {
-        return self.vkDevice
+        return self._device
     }
 
     public var label: String? {
@@ -29,6 +29,6 @@ public class VkMetalObject: CustomStringConvertible,
     }
 
     internal init(device: VkMetalDevice) {
-        self.vkDevice = device
+        self._device = device
     }
 }

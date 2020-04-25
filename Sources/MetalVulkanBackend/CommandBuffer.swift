@@ -13,6 +13,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     private let _commandQueue: VkMetalCommandQueue
     private let commandBuffer: VulkanCommandBuffer
+    private let index: Int
     private var state = State.recording
     private let executionQueue = DispatchQueue(label: "VkMetalCommandBuffer.executionQueue")
     private let scheduledGroup = DispatchGroup()
@@ -23,16 +24,26 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     internal init(commandQueue: VkMetalCommandQueue,
-                  commandBuffer: VulkanCommandBuffer) {
+                  commandBuffer: VulkanCommandBuffer,
+                  index: Int) {
         self._commandQueue = commandQueue
         self.commandBuffer = commandBuffer
-        super.init(device: commandQueue.vkDevice)
+        self.index = index
+        super.init(device: commandQueue._device)
         self.scheduledGroup.enter()
         self.completionGroup.enter()
     }
 
     internal func getCommandBuffer() -> VulkanCommandBuffer {
         return self.commandBuffer
+    }
+
+    internal func setCompleted() {
+        self.completionGroup.leave()
+    }
+
+    internal func setScheduled() {
+        self.scheduledGroup.leave()
     }
 
     public func addCompletedHandler(block: @escaping (CommandBuffer) -> Void) {
@@ -56,8 +67,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func commit() {
-        self.scheduledGroup.leave()
-        self.completionGroup.leave()
+        self._commandQueue.commit(commandBuffer: self)
     }
 
     public func encodeSignalEvent(_ event: Event,

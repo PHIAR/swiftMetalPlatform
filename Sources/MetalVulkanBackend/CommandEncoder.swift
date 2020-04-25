@@ -6,7 +6,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
 
     internal init(commandBuffer: VkMetalCommandBuffer) {
         self.commandBuffer = commandBuffer
-        super.init(device: commandBuffer.vkDevice)
+        super.init(device: commandBuffer._device)
     }
 
     public func endEncoding() {

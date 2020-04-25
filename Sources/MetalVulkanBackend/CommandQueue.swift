@@ -8,13 +8,14 @@ internal final class VkMetalCommandQueue: VkMetalObject,
 
     private let deviceQueue: VulkanQueue
     private let commandPool: VulkanCommandPool
-    private var commandBuffers: [VkMetalCommandBuffer]!
-    private var currentIndex = 0
+    private var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
 
     internal let executionQueue = DispatchQueue(label: "VkMetalCommandQueue.executionQueue")
 
     public override var description: String {
-        return super.description + " commandQueue:"
+        return """
+        CommandQueue
+        """
     }
 
     internal init(device: VkMetalDevice,
@@ -27,24 +28,49 @@ internal final class VkMetalCommandQueue: VkMetalObject,
         self.deviceQueue = deviceQueue
         self.commandPool = commandPool
         super.init(device: device)
-        self.commandBuffers = commandPool.allocateCommandBuffers(count: _maxCommandBufferCount).map {
-            return VkMetalCommandBuffer(commandQueue: self,
-                                        commandBuffer: $0)
+
+        var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
+        let _commandBuffers = commandPool.allocateCommandBuffers(count: _maxCommandBufferCount)
+
+        for index in 0..<_maxCommandBufferCount {
+            commandBuffers[index] = VkMetalCommandBuffer(commandQueue: self,
+                                                         commandBuffer: _commandBuffers[index],
+                                                         index: index)
         }
+
+        self.commandBuffers = commandBuffers
     }
 
     deinit {
     }
 
-    public func makeCommandBuffer() -> CommandBuffer? {
-        if self.currentIndex >= self.commandBuffers.count {
-            self.currentIndex = 0
+    internal func commit(commandBuffer: VkMetalCommandBuffer) {
+        self.executionQueue.async {
+            let device = self._device.device
+            let fence = device.createFence()
+
+            self.deviceQueue.submit(waitSemaphores: [],
+                                    waitDstStageMask: [],
+                                    commandBuffers: [ commandBuffer.getCommandBuffer() ],
+                                    signalSemaphores: [],
+                                    fence: fence)
+            commandBuffer.setScheduled()
+
+            DispatchQueue.global().async {
+                device.waitForFences(fences: [ fence ])
+                commandBuffer.setCompleted()
+            }
         }
+    }
 
-        let commandBuffer = self.commandBuffers[self.currentIndex]
+    public func makeCommandBuffer() -> CommandBuffer? {
+        return self.executionQueue.sync {
+            if self.commandBuffers.isEmpty {
+                self._device.device.waitIdle()
+            }
 
-        self.currentIndex += 1
-        return commandBuffer
+            return self.commandBuffers.removeValue(forKey: self.commandBuffers.first!.key)
+        }
     }
 
     public func makeCommandBufferWithUnretainedReferences() -> CommandBuffer? {
