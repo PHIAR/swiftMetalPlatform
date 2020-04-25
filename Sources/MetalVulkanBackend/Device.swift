@@ -281,6 +281,6 @@ extension VkMetalDevice: CustomStringConvertible {
 
 public extension Device {
     var vulkanInstance: VulkanInstance? {
-        return self as? VulkanInstance
+        return VkMetalDevice.instance
     }
 }
