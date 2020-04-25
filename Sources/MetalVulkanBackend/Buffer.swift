@@ -44,7 +44,6 @@ internal final class VkMetalBuffer: VkMetalResource,
 
     deinit {
         self.deviceMemory.unmap()
-        free(self._contents)
     }
 
     public func contents() -> UnsafeMutableRawPointer {
