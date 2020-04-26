@@ -511,7 +511,7 @@ public final class SharedEventHandle {
     }
 }
 
-public final class SharedEventListener {
+open class SharedEventListener {
     private let _dispatchQueue: DispatchQueue
 
     public var dispatchQueue: DispatchQueue {

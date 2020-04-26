@@ -19,6 +19,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     private let executionQueue = DispatchQueue(label: "VkMetalCommandBuffer.executionQueue")
     private let scheduledGroup = DispatchGroup()
     private let completionGroup = DispatchGroup()
+    private var sharedEvents: Set <VkMetalSharedEvent> = []
 
     public var commandQueue: CommandQueue {
         return self._commandQueue
@@ -80,12 +81,21 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func commit() {
-        self.commandBuffer.end()
-        self._commandQueue.commit(commandBuffer: self)
+        self.executionQueue.sync {
+            self.sharedEvents.forEach { $0.issueListeners() }
+            self.sharedEvents.removeAll()
+            self.commandBuffer.end()
+            self._commandQueue.commit(commandBuffer: self)
+        }
     }
 
     public func encodeSignalEvent(_ event: Event,
                                   value: UInt64) {
+        if let sharedEvent = event as? VkMetalSharedEvent,
+           let _sharedEvent = sharedEvent.getEvent() {
+            self.commandBuffer.set(event: _sharedEvent)
+            _ = self.executionQueue.sync { self.sharedEvents.insert(sharedEvent) }
+        }
     }
 
     public func encodeWaitForEvent(_ event: Event,
