@@ -534,6 +534,7 @@ public final class TextureDescriptor {
                                           mipmapped: Bool) -> TextureDescriptor {
         let descriptor = TextureDescriptor()
 
+        descriptor.textureType = .type2D
         descriptor.pixelFormat = pixelFormat
         descriptor.width = width
         descriptor.height = height

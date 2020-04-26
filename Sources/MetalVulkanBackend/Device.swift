@@ -1,4 +1,5 @@
 import swiftVulkan
+import vulkan
 import Foundation
 import MetalProtocols
 
@@ -12,6 +13,29 @@ internal func MetalCopyAllDevices() -> [Device] {
 
 internal func MetalCreateSystemDefaultDevice() -> Device? {
     return VkMetalDevice()
+}
+
+internal extension PixelFormat {
+    private static let formatMappings: [PixelFormat: VulkanFormat] = [
+        .bgra8Unorm: .bgra8Unorm,
+    ]
+
+    func toVulkanFormat() -> VulkanFormat {
+        return PixelFormat.formatMappings[self]!
+    }
+}
+
+internal extension TextureType {
+    private static let imageTypeMappings: [TextureType: VulkanImageType] = [
+        .type1D: .type1D,
+        .type2D: .type2D,
+        .type3D: .type3D,
+        .typeCube: .type2D,
+    ]
+
+    func toVulkanImageType() -> VulkanImageType {
+        return TextureType.imageTypeMappings[self]!
+    }
 }
 
 internal final class VkMetalDevice: Device {
@@ -265,7 +289,25 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeTexture(descriptor: TextureDescriptor) -> Texture? {
-        return VkMetalTexture(device: self)
+        let flags = {
+            return ((descriptor.textureType == .typeCube) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT.rawValue : 0)
+        }()
+        let extent = VkExtent3D(width: UInt32(descriptor.width),
+                                height: UInt32(descriptor.height),
+                                depth: UInt32(descriptor.depth))
+        let imageType = descriptor.textureType.toVulkanImageType()
+        let format = descriptor.pixelFormat.toVulkanFormat()
+        let image = self.device.createImage(flags: flags,
+                                            imageType: imageType,
+                                            format: format,
+                                            extent: extent,
+                                            mipLevels: descriptor.mipmapLevelCount,
+                                            arrayLayers: descriptor.arrayLength,
+                                            usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
+                                            queueFamilies: [ self.queueFamily ])
+
+        return VkMetalTexture(device: self,
+                              image: image)
     }
 
     func supportsFeatureSet(_ featureSet: FeatureSet) -> Bool {

@@ -46,6 +46,10 @@ internal final class VkMetalBuffer: VkMetalResource,
         self.deviceMemory.unmap()
     }
 
+    internal func getBuffer() -> VulkanBuffer {
+        return self.buffer
+    }
+
     public func contents() -> UnsafeMutableRawPointer {
         self._contents
     }

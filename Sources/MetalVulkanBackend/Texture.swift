@@ -1,7 +1,10 @@
+import swiftVulkan
 import MetalProtocols
 
 internal final class VkMetalTexture: VkMetalResource,
                                      Texture {
+    private let image: VulkanImage
+
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
     }
@@ -42,6 +45,16 @@ internal final class VkMetalTexture: VkMetalResource,
 
     public var arrayLength: Int {
         return 1
+    }
+
+    internal init(device: VkMetalDevice,
+                  image: VulkanImage) {
+        self.image = image
+        super.init(device: device)
+    }
+
+    internal func getImage() -> VulkanImage {
+        return self.image
     }
 
     public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,
