@@ -41,6 +41,7 @@ internal extension TextureType {
 internal final class VkMetalDevice: Device {
     internal static let instance: VulkanInstance? = {
         var extensions = [
+            "VK_KHR_get_physical_device_properties2",
             "VK_KHR_surface",
         ]
 
@@ -119,11 +120,18 @@ internal final class VkMetalDevice: Device {
 
         precondition(!queueFamilyProperties.isEmpty)
 
+        var features = VkPhysicalDeviceFeatures()
+
+        features.shaderInt16 = VkBool32(VK_TRUE)
+
         let device = physicalDevice.createDevice(queues: [ queueFamily ],
-                                                 layerNames: [
-            "VK_EXT_descriptor_indexing",
+                                                 layerNames: [],
+                                                 extensions: [
+            "VK_KHR_8bit_storage",
+            "VK_KHR_shader_float16_int8",
+            "VK_KHR_storage_buffer_storage_class",
         ],
-                                                 extensions: [])
+                                                 features: features)
 
         self.physicalDevice = physicalDevice
         self.device = device
