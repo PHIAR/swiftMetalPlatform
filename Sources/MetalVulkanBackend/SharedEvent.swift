@@ -89,7 +89,7 @@ public final class VkMetalSharedEventListener: SharedEventListener {
                     handledEvents += 1
                 }
             }
-            self.events.forEach { $0 }
+
             self.events.removeAll()
         }
     }
