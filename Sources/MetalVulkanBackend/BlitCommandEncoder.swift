@@ -61,6 +61,17 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
     public func fill(buffer: Buffer,
                      range: Range <Int>,
                      value: UInt8) {
+        let _buffer = buffer as! VkMetalBuffer
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let data = UInt32(value << 24) |
+                   UInt32(value << 16) |
+                   UInt32(value << 8) |
+                   UInt32(value)
+
+        commandBuffer.fillBuffer(dstBuffer: _buffer.getBuffer(),
+                                 dstOffset: range.lowerBound,
+                                 size: range.count,
+                                 data: data)
     }
 
     public func generateMipmaps(for: Texture) {
