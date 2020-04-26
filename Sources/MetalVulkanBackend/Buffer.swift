@@ -27,7 +27,8 @@ internal final class VkMetalBuffer: VkMetalResource,
         let deviceMemory = device.device.allocateMemory(size: length,
                                                         memoryTypeIndex: 0)
         let buffer = device.device.createBuffer(size: length,
-                                                usage: VK_BUFFER_USAGE_STORAGE_BUFFER_BIT.rawValue,
+                                                usage: VK_BUFFER_USAGE_TRANSFER_DST_BIT.rawValue |
+                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT.rawValue,
                                                 queueFamilies: [ 0 ])
 
         buffer.bindBufferMemory(deviceMemory: deviceMemory,

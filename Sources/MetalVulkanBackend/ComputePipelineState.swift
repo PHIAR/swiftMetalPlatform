@@ -34,8 +34,7 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
         let pipelineStage = VulkanPipelineShaderStage(stage: VK_SHADER_STAGE_COMPUTE_BIT,
                                                       shaderModule: shaderModule,
                                                       name: entryPoint)
-        let pipeline = device.createComputePipeline(flags: 0,
-                                                    stage: pipelineStage,
+        let pipeline = device.createComputePipeline(stage: pipelineStage,
                                                     layout: pipelineLayout)
 
         self.function = function
