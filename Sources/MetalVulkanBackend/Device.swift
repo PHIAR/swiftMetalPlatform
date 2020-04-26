@@ -210,9 +210,15 @@ internal final class VkMetalDevice: Device {
         var shaders: [String: [UInt32]] = [:]
 
         try shaderURLs.forEach { shaderURL in
+        #if os(iOS) || os(macOS) || os(tvOS)
+            guard let name = shaderURL.lastPathComponent.split(separator: ".").first else {
+                return
+            }
+        #else
             guard let name = shaderURL.lastPathComponent?.split(separator: ".").first else {
                 return
             }
+        #endif
 
             shaders[String(name)] = try Data(contentsOf: shaderURL as URL).withUnsafeBytes {
                 return Array(UnsafeBufferPointer(start: $0.baseAddress!.assumingMemoryBound(to: UInt32.self),
