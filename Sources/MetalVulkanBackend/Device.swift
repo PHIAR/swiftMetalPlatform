@@ -124,13 +124,21 @@ internal final class VkMetalDevice: Device {
 
         features.shaderInt16 = VkBool32(VK_TRUE)
 
-        let device = physicalDevice.createDevice(queues: [ queueFamily ],
-                                                 layerNames: [],
-                                                 extensions: [
+        var extensions: [String] = [
+            "VK_KHR_storage_buffer_storage_class",
+        ]
+
+    #if os(Android)
+    #else
+        extensions += [
             "VK_KHR_8bit_storage",
             "VK_KHR_shader_float16_int8",
-            "VK_KHR_storage_buffer_storage_class",
-        ],
+        ]
+    #endif
+
+        let device = physicalDevice.createDevice(queues: [ queueFamily ],
+                                                 layerNames: [],
+                                                 extensions: extensions,
                                                  features: features)
 
         self.physicalDevice = physicalDevice
