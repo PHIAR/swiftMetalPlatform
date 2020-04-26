@@ -36,8 +36,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                                  descriptorCount: 128),
         ]
 
-        let descriptorPool = device.device.createDescriptorPool(flags: VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT.rawValue,
-                                                                maxSets: maxDescriptorSets,
+        let descriptorPool = device.device.createDescriptorPool(maxSets: maxDescriptorSets,
                                                                 poolSizes: poolSizes)
 
         self.deviceQueue = deviceQueue

@@ -38,8 +38,7 @@ internal final class VkMetalFunction: Function {
             spirvReflectDestroyDescriptorSetLayout(&descriptorSetLayout)
             return bindings
         }
-        let _descriptorSetLayout = device.createDescriptorSetLayout(flags: VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT.rawValue,
-                                                                    bindings: bindings)
+        let _descriptorSetLayout = device.createDescriptorSetLayout(bindings: bindings)
 
         self.init(entryPoint: entryPoint,
                   shaderModule: shaderModule,
