@@ -63,7 +63,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     internal func commit(commandBuffer: VkMetalCommandBuffer) {
         self.executionQueue.async {
             let device = self._device.device
-            let fence = device.createFence()
+            let fence = commandBuffer.getFence()
 
             self.deviceQueue.submit(waitSemaphores: [],
                                     waitDstStageMask: [],
@@ -74,6 +74,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
 
             DispatchQueue.global().async {
                 device.waitForFences(fences: [ fence ])
+                device.resetFences(fences: [ fence ])
                 commandBuffer.setCompleted()
             }
         }

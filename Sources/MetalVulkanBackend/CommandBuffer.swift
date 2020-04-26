@@ -13,6 +13,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     private let _commandQueue: VkMetalCommandQueue
     private let commandBuffer: VulkanCommandBuffer
+    private let fence: VulkanFence
     private let index: Int
     private var state = State.recording
     private let executionQueue = DispatchQueue(label: "VkMetalCommandBuffer.executionQueue")
@@ -26,11 +27,17 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     internal init(commandQueue: VkMetalCommandQueue,
                   commandBuffer: VulkanCommandBuffer,
                   index: Int) {
+        let device = commandQueue._device
+        let _device = device.device
+        let fence = _device.createFence()
+
         self._commandQueue = commandQueue
         self.commandBuffer = commandBuffer
+        self.fence = fence
         self.index = index
-        super.init(device: commandQueue._device)
+        super.init(device: device)
 
+        _device.resetFences(fences: [ fence ])
         commandBuffer.begin()
         self.scheduledGroup.enter()
         self.completionGroup.enter()
@@ -38,6 +45,10 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     internal func getCommandBuffer() -> VulkanCommandBuffer {
         return self.commandBuffer
+    }
+
+    internal func getFence() -> VulkanFence {
+        return self.fence
     }
 
     internal func setCompleted() {
