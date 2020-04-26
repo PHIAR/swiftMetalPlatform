@@ -1,3 +1,4 @@
+import vulkan
 import swiftVulkan
 import Dispatch
 import MetalProtocols
@@ -9,6 +10,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     private let deviceQueue: VulkanQueue
     private let commandPool: VulkanCommandPool
     private var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
+    private let descriptorPool: VulkanDescriptorPool
 
     internal let executionQueue = DispatchQueue(label: "VkMetalCommandQueue.executionQueue")
 
@@ -24,9 +26,23 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                   maxCommandBufferCount: Int) {
         let _maxCommandBufferCount = (maxCommandBufferCount == 0) ? VkMetalCommandQueue.maxCommandBufferCount :
                                                                     maxCommandBufferCount
+        let maxDescriptorSets = 1
+        let poolSizes = [
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                 descriptorCount: 128),
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                 descriptorCount: 128),
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                 descriptorCount: 128),
+        ]
+
+        let descriptorPool = device.device.createDescriptorPool(flags: VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT.rawValue,
+                                                                maxSets: maxDescriptorSets,
+                                                                poolSizes: poolSizes)
 
         self.deviceQueue = deviceQueue
         self.commandPool = commandPool
+        self.descriptorPool = descriptorPool
         super.init(device: device)
 
         var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
