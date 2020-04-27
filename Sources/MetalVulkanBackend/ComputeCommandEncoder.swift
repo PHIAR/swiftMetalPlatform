@@ -32,10 +32,12 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
 
         var _index = 0
 
-        functionArgumentTypes.forEach {
-            guard $0 == argumentType,
+        for i in 0..<functionArgumentTypes.count {
+            let functionArgumentType = functionArgumentTypes[i]
+
+            guard argumentType == functionArgumentType,
                   _index < index else {
-                return
+                break
             }
 
             _index += 1
