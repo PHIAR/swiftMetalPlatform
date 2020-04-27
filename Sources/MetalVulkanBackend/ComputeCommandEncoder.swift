@@ -30,20 +30,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
             return index
         }
 
-        var _index = 0
-
-        for i in 0..<functionArgumentTypes.count {
-            let functionArgumentType = functionArgumentTypes[i]
-
-            guard argumentType == functionArgumentType,
-                  _index < index else {
-                break
-            }
-
-            _index += 1
-        }
-
-        return _index
+        return (0..<index).reduce(0) { $0 + ((argumentType == functionArgumentTypes[$1]) ? 1 : 0) }
     }
 
     public func dispatchThreadgroups(_ threadgroupsPerGrid: Size,
