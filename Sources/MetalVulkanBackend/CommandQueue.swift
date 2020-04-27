@@ -60,12 +60,10 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                                     signalSemaphores: [],
                                     fence: fence)
             commandBuffer.setScheduled()
-
-            DispatchQueue.global().async {
-                device.waitForFences(fences: [ fence ])
-                device.resetFences(fences: [ fence ])
-                commandBuffer.setCompleted()
-            }
+            device.waitForFences(fences: [ fence ])
+            device.resetFences(fences: [ fence ])
+            commandBuffer.setCompleted()
+            self.commandBuffers[commandBuffer.getIndex()] = commandBuffer
         }
     }
 

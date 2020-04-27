@@ -30,6 +30,22 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         return self._commandQueue
     }
 
+    private func begin() {
+        self.commandBuffer.begin()
+        self.scheduledGroup.enter()
+        self.completionGroup.enter()
+
+        self.completionGroup.notify(queue: self.executionQueue) {
+            self.descriptorSets.removeAll()
+            self.trackedEvents.removeAll()
+            self.trackedResources.removeAll()
+        }
+
+        let _device = self._device.device
+
+        _device.resetFences(fences: [ fence ])
+    }
+
     internal init(commandQueue: VkMetalCommandQueue,
                   descriptorPool: VulkanDescriptorPool,
                   commandBuffer: VulkanCommandBuffer,
@@ -46,17 +62,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         self.index = index
         self.retained = retained
         super.init(device: device)
-
-        _device.resetFences(fences: [ fence ])
-        commandBuffer.begin()
-        self.scheduledGroup.enter()
-        self.completionGroup.enter()
-
-        self.completionGroup.notify(queue: self.executionQueue) {
-            self.descriptorSets.removeAll()
-            self.trackedEvents.removeAll()
-            self.trackedResources.removeAll()
-        }
+        self.begin()
     }
 
     internal func addDescriptorSet(descriptorSets: [VulkanDescriptorSet]) {
@@ -83,8 +89,13 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         return self.fence
     }
 
+    internal func getIndex() -> Int {
+        return self.index
+    }
+
     internal func setCompleted() {
         self.completionGroup.leave()
+        self.begin()
     }
 
     internal func setScheduled() {
