@@ -108,18 +108,19 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let computePipelineState = self.computePipelineState!
         let pipelineLayout = computePipelineState.getPipelineLayout()
         let function = computePipelineState.getFunction()
-        let pushConstants = function.getPushConstants()
+        let pushConstantDescriptors = function.getPushConstantDescriptors()
         let dstBinding = self.getEffectiveBufferIndex(index: index,
                                                       argumentType: .constant)
-        let pushConstant = pushConstants[dstBinding]
+        let pushConstantDescriptor = pushConstantDescriptors[dstBinding]
+
+        precondition(length == pushConstantDescriptor.size)
+
         let values = UnsafeRawBufferPointer(start: bytes,
                                             count: length)
 
-        precondition(pushConstant.size == length)
-
         commandBuffer.pushConstants(layout: pipelineLayout,
                                     stageFlags: VK_SHADER_STAGE_COMPUTE_BIT.rawValue,
-                                    offset: Int(pushConstant.offset),
+                                    offset: Int(pushConstantDescriptor.offset),
                                     values: values)
     }
 

@@ -10,22 +10,27 @@ internal final class VkMetalFunction: Function {
     private let shaderModule: VulkanShaderModule
     private let constantValues: FunctionConstantValues?
     private let descriptorSetLayout: VulkanDescriptorSetLayout
-    private let pushConstants: [VkPushConstantRange]
+    private let pushConstantRange: VkPushConstantRange
+    private let pushConstantDescriptors: [spirv_push_constant_descriptor_t]
     private let functionArgumentTypes: FunctionArgumentTypes
 
     internal convenience init(device: VulkanDevice,
                               spirv: [UInt32],
+                              name: String,
                               functionArgumentTypes: FunctionArgumentTypes = [],
                               constantValues: FunctionConstantValues? = nil) {
         var entryPoint = ""
         let shaderModule = device.createShaderModule(code: spirv.withUnsafeBufferPointer { Data(buffer: $0) })
         let (bindings: bindings,
-             pushConstants: pushConstants): (bindings: [VulkanDescriptorSetLayoutBinding],
-                                             pushConstants: [VkPushConstantRange]) = spirv.withUnsafeBytes {
+             pushConstantRange: pushConstantRange,
+             pushConstantDescriptors: pushConstantDescriptors): (bindings: [VulkanDescriptorSetLayoutBinding],
+                                                                 pushConstantRange: VkPushConstantRange,
+                                                                 pushConstantDescriptors: [spirv_push_constant_descriptor_t]) = spirv.withUnsafeBytes { _spirv in
             var descriptorSetLayout = spirv_descriptor_set_layout_t()
-            let success = spirvReflectCreateDescriptorSetLayout($0.baseAddress!.assumingMemoryBound(to: UInt32.self),
-                                                                spirv.count,
-                                                                &descriptorSetLayout)
+            let success = name.withCString { spirvReflectCreateDescriptorSetLayout($0,
+                                                                                   _spirv.baseAddress!.assumingMemoryBound(to: UInt32.self),
+                                                                                   spirv.count,
+                                                                                   &descriptorSetLayout) }
 
             precondition(success)
 
@@ -40,20 +45,23 @@ internal final class VkMetalFunction: Function {
                                                         immutableSamplers: [])
             }
 
-            let pushConstants = Array(UnsafeBufferPointer(start: descriptorSetLayout.pushConstants,
-                                                          count: descriptorSetLayout.pushConstantCount))
+            let pushConstantDescriptors = Array(UnsafeBufferPointer(start: descriptorSetLayout.pushConstantDescriptors,
+                                                                    count: descriptorSetLayout.pushConstantDescriptorCount))
 
             spirvReflectDestroyDescriptorSetLayout(&descriptorSetLayout)
             return (bindings: bindings,
-                    pushConstants: pushConstants)
+                    pushConstantRange: descriptorSetLayout.pushConstantRange,
+                    pushConstantDescriptors: pushConstantDescriptors)
         }
+
         let _descriptorSetLayout = device.createDescriptorSetLayout(bindings: bindings)
 
         self.init(entryPoint: entryPoint,
                   shaderModule: shaderModule,
                   constantValues: constantValues,
                   descriptorSetLayout:  _descriptorSetLayout,
-                  pushConstants: pushConstants,
+                  pushConstantRange: pushConstantRange,
+                  pushConstantDescriptors: pushConstantDescriptors,
                   functionArgumentTypes: functionArgumentTypes)
     }
 
@@ -61,13 +69,15 @@ internal final class VkMetalFunction: Function {
                            shaderModule: VulkanShaderModule,
                            constantValues: FunctionConstantValues? = nil,
                            descriptorSetLayout: VulkanDescriptorSetLayout,
-                           pushConstants: [VkPushConstantRange],
+                           pushConstantRange: VkPushConstantRange,
+                           pushConstantDescriptors: [spirv_push_constant_descriptor_t],
                            functionArgumentTypes: FunctionArgumentTypes) {
         self.entryPoint = entryPoint
         self.shaderModule = shaderModule
         self.constantValues = constantValues
         self.descriptorSetLayout = descriptorSetLayout
-        self.pushConstants = pushConstants
+        self.pushConstantRange = pushConstantRange
+        self.pushConstantDescriptors = pushConstantDescriptors
         self.functionArgumentTypes = functionArgumentTypes
     }
 
@@ -76,7 +86,8 @@ internal final class VkMetalFunction: Function {
                                shaderModule: self.shaderModule,
                                constantValues: self.constantValues,
                                descriptorSetLayout: self.descriptorSetLayout,
-                               pushConstants: self.pushConstants,
+                               pushConstantRange: self.pushConstantRange,
+                               pushConstantDescriptors: self.pushConstantDescriptors,
                                functionArgumentTypes: functionArgumentTypes)
     }
 
@@ -92,8 +103,12 @@ internal final class VkMetalFunction: Function {
         return self.functionArgumentTypes
     }
 
-    public func getPushConstants() -> [VkPushConstantRange] {
-        return self.pushConstants
+    public func getPushConstantRange() -> VkPushConstantRange {
+        return self.pushConstantRange
+    }
+
+    public func getPushConstantDescriptors() -> [spirv_push_constant_descriptor_t] {
+        return self.pushConstantDescriptors
     }
 
     public func getShaderModule() -> VulkanShaderModule {

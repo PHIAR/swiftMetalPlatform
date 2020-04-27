@@ -5,12 +5,18 @@
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
 
+typedef struct spirv_push_constant_descriptor_t {
+    size_t offset;
+    size_t size;
+} spirv_push_constant_descriptor_t;
+
 typedef struct spirv_descriptor_set_layout_t {
     char const *entry_point;
     VkDescriptorSetLayoutBinding *bindings;
     size_t bindingCount;
-    VkPushConstantRange *pushConstants;
-    size_t pushConstantCount;
+    VkPushConstantRange pushConstantRange;
+    spirv_push_constant_descriptor_t *pushConstantDescriptors;
+    size_t pushConstantDescriptorCount;
 } spirv_descriptor_set_layout_t;
 
 #ifdef __cplusplus
@@ -18,9 +24,10 @@ extern "C" {
 #endif
 
 bool
-spirvReflectCreateDescriptorSetLayout(uint32_t const *code,
+spirvReflectCreateDescriptorSetLayout(char const *entry_point,
+                                      uint32_t const *code,
                                       size_t length,
-                                      spirv_descriptor_set_layout_t *descriptor_set_layout);
+                                      spirv_descriptor_set_layout_t *descriptor_set_layout_result);
 
 void
 spirvReflectDestroyDescriptorSetLayout(spirv_descriptor_set_layout_t *descriptor_set_layout);

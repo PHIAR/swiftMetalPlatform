@@ -41,6 +41,7 @@ internal final class VkMetalLibrary: Library {
 
         return VkMetalFunction(device: self.device.device,
                                spirv: spirv,
+                               name: name,
                                functionArgumentTypes: functionArgumentTypes)
     }
 
@@ -53,6 +54,7 @@ internal final class VkMetalLibrary: Library {
 
         return VkMetalFunction(device: self.device.device,
                                spirv: spirv,
+                               name: name,
                                functionArgumentTypes: functionArgumentTypes,
                                constantValues: constantValues)
     }

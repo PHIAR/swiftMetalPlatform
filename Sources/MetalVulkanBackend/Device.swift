@@ -141,7 +141,7 @@ internal final class VkMetalDevice: Device {
                                                  layerNames: [],
                                                  extensions: extensions,
                                                  features: features)
-        let maxDescriptorSets = 1
+        let maxDescriptorSets = 128
         let poolSizes = [
             VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
                                  descriptorCount: 128),
