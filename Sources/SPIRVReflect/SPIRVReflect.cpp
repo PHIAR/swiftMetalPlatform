@@ -123,47 +123,47 @@ spirvReflectCreateDescriptorSetLayout(char const *entry_point,
 
         auto const &bufferRanges = compiler.get_active_buffer_ranges(pushConstant.id);
 
-        assert(bufferRanges.size() == 1);
-
-        auto const &bufferRange = bufferRanges[0];
-
-    #if SPIRV_REFLECT_ENABLE_LOG
-        printf("        index: %d\n", bufferRange.index);
-        printf("        offset: %zu\n", bufferRange.offset);
-        printf("        range: %zu\n", bufferRange.range);
-    #endif
-
-        descriptor_set_layout.pushConstantRange.offset = bufferRange.offset;
-        descriptor_set_layout.pushConstantRange.size = bufferRange.range;
-        descriptor_set_layout.pushConstantRange.stageFlags = shaderStageFlags;
-
-        auto const &podStructType = compiler.get_type(pushConstant.base_type_id);
-        auto const &podStructMemberCount = podStructType.member_types.size();
-
-        assert(podStructMemberCount == 1);
-
-    #if SPIRV_REFLECT_ENABLE_LOG
-        printf("   podStruct: %s\n", compiler.get_name(pushConstant.id).c_str());
-    #endif
-
-        auto const &_podStructType = compiler.get_type(podStructType.member_types[0]);
-        auto const &_podStructMemberCount = _podStructType.member_types.size();
-
-        descriptor_set_layout.pushConstantDescriptors = static_cast <spirv_push_constant_descriptor_t *> (calloc(_podStructMemberCount, sizeof(spirv_push_constant_descriptor_t)));
-        descriptor_set_layout.pushConstantDescriptorCount = _podStructMemberCount;
-
-        for (auto &&j = size_t(0); j < _podStructMemberCount; ++j) {
-            descriptor_set_layout.pushConstantDescriptors[j].offset = compiler.type_struct_member_offset(_podStructType, j);
-            descriptor_set_layout.pushConstantDescriptors[j].size = compiler.get_declared_struct_member_size(_podStructType, j);
+        if (!bufferRanges.empty()) {
+            auto const &bufferRange = bufferRanges[0];
 
         #if SPIRV_REFLECT_ENABLE_LOG
-            auto const &name = compiler.get_member_name(_podStructType.self, j);
-
-            printf("        name: %s\n", name.c_str());
-            printf("        index: %lu\n", j);
-            printf("        size: %zu\n", descriptor_set_layout.pushConstantDescriptors[j].size);
-            printf("        offset: %zu\n", descriptor_set_layout.pushConstantDescriptors[j].offset);
+            printf("        index: %d\n", bufferRange.index);
+            printf("        offset: %zu\n", bufferRange.offset);
+            printf("        range: %zu\n", bufferRange.range);
         #endif
+
+            descriptor_set_layout.pushConstantRange.offset = bufferRange.offset;
+            descriptor_set_layout.pushConstantRange.size = bufferRange.range;
+            descriptor_set_layout.pushConstantRange.stageFlags = shaderStageFlags;
+
+            auto const &podStructType = compiler.get_type(pushConstant.base_type_id);
+            auto const &podStructMemberCount = podStructType.member_types.size();
+
+            assert(podStructMemberCount == 1);
+
+        #if SPIRV_REFLECT_ENABLE_LOG
+            printf("   podStruct: %s\n", compiler.get_name(pushConstant.id).c_str());
+        #endif
+
+            auto const &_podStructType = compiler.get_type(podStructType.member_types[0]);
+            auto const &_podStructMemberCount = _podStructType.member_types.size();
+
+            descriptor_set_layout.pushConstantDescriptors = static_cast <spirv_push_constant_descriptor_t *> (calloc(_podStructMemberCount, sizeof(spirv_push_constant_descriptor_t)));
+            descriptor_set_layout.pushConstantDescriptorCount = _podStructMemberCount;
+
+            for (auto &&j = size_t(0); j < _podStructMemberCount; ++j) {
+                descriptor_set_layout.pushConstantDescriptors[j].offset = compiler.type_struct_member_offset(_podStructType, j);
+                descriptor_set_layout.pushConstantDescriptors[j].size = compiler.get_declared_struct_member_size(_podStructType, j);
+
+            #if SPIRV_REFLECT_ENABLE_LOG
+                auto const &name = compiler.get_member_name(_podStructType.self, j);
+
+                printf("        name: %s\n", name.c_str());
+                printf("        index: %lu\n", j);
+                printf("        size: %zu\n", descriptor_set_layout.pushConstantDescriptors[j].size);
+                printf("        offset: %zu\n", descriptor_set_layout.pushConstantDescriptors[j].offset);
+            #endif
+            }
         }
     }
 
