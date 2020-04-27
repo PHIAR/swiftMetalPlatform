@@ -5,6 +5,17 @@ import MetalProtocols
 internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
                                                    ComputeCommandEncoder {
     private var computePipelineState: VkMetalComputePipelineState? = nil
+    private var descriptorSet: VulkanDescriptorSet? = nil
+
+    private func bindDescriptorSet() {
+        let computePipelineState = self.computePipelineState!
+        let pipelineLayout = computePipelineState.getPipelineLayout()
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.bindDescriptorSets(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
+                                         pipelineLayout: pipelineLayout,
+                                         descriptorSets: [ self.descriptorSet! ])
+    }
 
     public func dispatchThreadgroups(_ threadgroupsPerGrid: Size,
                                      threadsPerThreadgroup: Size) {
@@ -13,6 +24,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
                                   depth: threadgroupsPerGrid.depth * threadsPerThreadgroup.depth)
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindDescriptorSet()
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
@@ -22,14 +34,29 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
                                 threadsPerThreadgroup: Size) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindDescriptorSet()
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
     }
 
+    public override func endEncoding() {
+    }
+
     public func setBuffer(_ buffer: Buffer?,
                           offset: Int,
                           index: Int) {
+        let device = self._device.device
+        let _buffer = buffer as! VkMetalBuffer
+        let descriptorSet = self.descriptorSet!
+        let bufferInfo = VkDescriptorBufferInfo(buffer: _buffer.buffer.getBuffer(),
+                                                offset: VkDeviceSize(offset),
+                                                range: VK_WHOLE_SIZE)
+
+        device.writeDescriptorSet(descriptorSet: descriptorSet,
+                                  dstBinding: index,
+                                  descriptorType: VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                  bufferInfos: [ bufferInfo ])
     }
 
     public func setBuffers(_ buffers: [Buffer?],
@@ -45,10 +72,16 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
     public func setComputePipelineState(_ state: ComputePipelineState) {
         let computePipelineState = state as! VkMetalComputePipelineState
         let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let function = computePipelineState.getFunction()
+        let descriptorSetLayout = function.getDescriptorSetLayout()
+        let device = self._device.device
+        let descriptorSet = device.allocateDescriptorSets(descriptorPool: self.descriptorPool,
+                                                          setLayouts: [ descriptorSetLayout ])
 
         commandBuffer.bindPipeline(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
                                    pipeline: computePipelineState.getPipeline())
         self.computePipelineState = computePipelineState
+        self.descriptorSet = descriptorSet[0]
     }
 
     public func setTexture(_ texture: Texture?,

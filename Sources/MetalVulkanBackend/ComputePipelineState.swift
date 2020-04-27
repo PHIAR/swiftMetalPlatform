@@ -42,7 +42,15 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
         self.pipeline = pipeline
     }
 
+    internal func getFunction() -> VkMetalFunction {
+        return self.function
+    }
+
     internal func getPipeline() -> VulkanPipeline {
         return self.pipeline
+    }
+
+    internal func getPipelineLayout() -> VulkanPipelineLayout {
+        return self.pipelineLayout
     }
 }

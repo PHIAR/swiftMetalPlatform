@@ -57,6 +57,7 @@ internal final class VkMetalDevice: Device {
     private let deviceMemBaseAddrAlign: Int
     private let queueFamily: Int
     private let deviceQueue: VulkanQueue
+    private let descriptorPool: VulkanDescriptorPool
 
     internal let physicalDevice: VulkanPhysicalDevice
     internal let device: VulkanDevice
@@ -140,12 +141,25 @@ internal final class VkMetalDevice: Device {
                                                  layerNames: [],
                                                  extensions: extensions,
                                                  features: features)
+        let maxDescriptorSets = 1
+        let poolSizes = [
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                 descriptorCount: 128),
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                 descriptorCount: 128),
+            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                 descriptorCount: 128),
+        ]
+
+        let descriptorPool = device.createDescriptorPool(maxSets: maxDescriptorSets,
+                                                         poolSizes: poolSizes)
 
         self.physicalDevice = physicalDevice
         self.device = device
         self.queueFamily = queueFamily
         self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamily,
                                                  queue: 0)
+        self.descriptorPool = descriptorPool
     }
 
     deinit {
@@ -198,6 +212,7 @@ internal final class VkMetalDevice: Device {
 
         return VkMetalCommandQueue(device: self,
                                    deviceQueue: self.deviceQueue,
+                                   descriptorPool: self.descriptorPool,
                                    commandPool: commandPool,
                                    maxCommandBufferCount: maxCommandBufferCount)
     }

@@ -8,9 +8,9 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     private static let maxCommandBufferCount = 16
 
     private let deviceQueue: VulkanQueue
+    private let descriptorPool: VulkanDescriptorPool
     private let commandPool: VulkanCommandPool
     private var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
-    private let descriptorPool: VulkanDescriptorPool
 
     internal let executionQueue = DispatchQueue(label: "VkMetalCommandQueue.executionQueue")
 
@@ -22,26 +22,15 @@ internal final class VkMetalCommandQueue: VkMetalObject,
 
     internal init(device: VkMetalDevice,
                   deviceQueue: VulkanQueue,
+                  descriptorPool: VulkanDescriptorPool,
                   commandPool: VulkanCommandPool,
                   maxCommandBufferCount: Int) {
         let _maxCommandBufferCount = (maxCommandBufferCount == 0) ? VkMetalCommandQueue.maxCommandBufferCount :
                                                                     maxCommandBufferCount
-        let maxDescriptorSets = 1
-        let poolSizes = [
-            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                                 descriptorCount: 128),
-            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                                 descriptorCount: 128),
-            VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                 descriptorCount: 128),
-        ]
-
-        let descriptorPool = device.device.createDescriptorPool(maxSets: maxDescriptorSets,
-                                                                poolSizes: poolSizes)
 
         self.deviceQueue = deviceQueue
-        self.commandPool = commandPool
         self.descriptorPool = descriptorPool
+        self.commandPool = commandPool
         super.init(device: device)
 
         var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
@@ -49,6 +38,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
 
         for index in 0..<_maxCommandBufferCount {
             commandBuffers[index] = VkMetalCommandBuffer(commandQueue: self,
+                                                         descriptorPool: self.descriptorPool,
                                                          commandBuffer: _commandBuffers[index],
                                                          index: index)
         }

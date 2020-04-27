@@ -12,6 +12,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     private let _commandQueue: VkMetalCommandQueue
+    private let descriptorPool: VulkanDescriptorPool
     private let commandBuffer: VulkanCommandBuffer
     private let fence: VulkanFence
     private let index: Int
@@ -26,6 +27,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     internal init(commandQueue: VkMetalCommandQueue,
+                  descriptorPool: VulkanDescriptorPool,
                   commandBuffer: VulkanCommandBuffer,
                   index: Int) {
         let device = commandQueue._device
@@ -33,6 +35,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         let fence = _device.createFence()
 
         self._commandQueue = commandQueue
+        self.descriptorPool = descriptorPool
         self.commandBuffer = commandBuffer
         self.fence = fence
         self.index = index
@@ -106,7 +109,8 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func makeBlitCommandEncoder() -> BlitCommandEncoder? {
-        return VkMetalBlitCommandEncoder(commandBuffer: self)
+        return VkMetalBlitCommandEncoder(descriptorPool: self.descriptorPool,
+                                         commandBuffer: self)
     }
 
     public func makeComputeCommandEncoder() -> ComputeCommandEncoder? {
@@ -114,11 +118,13 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func makeComputeCommandEncoder(dispatchType: DispatchType) -> ComputeCommandEncoder? {
-        return VkMetalComputeCommandEncoder(commandBuffer: self)
+        return VkMetalComputeCommandEncoder(descriptorPool: self.descriptorPool,
+                                            commandBuffer: self)
     }
 
     public func makeRenderCommandEncoder(descriptor: RenderPassDescriptor) -> RenderCommandEncoder? {
-        return VkMetalRenderCommandEncoder(commandBuffer: self)
+        return VkMetalRenderCommandEncoder(descriptorPool: self.descriptorPool,
+                                           commandBuffer: self)
     }
 
     public func present(_ drawable: Drawable) {
