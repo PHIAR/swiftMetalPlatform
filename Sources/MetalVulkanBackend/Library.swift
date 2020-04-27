@@ -6,43 +6,54 @@ import MetalProtocols
 internal final class VkMetalLibrary: Library {
     private let device: VkMetalDevice
     private let shaders: [String: [UInt32]]
+    private let functionsArgumentTypes: [String: FunctionArgumentTypes]
 
-    private func getSPIRV(name: String) -> [UInt32]? {
+    private func getFunctionCreationParameters(name: String) -> (spirv: [UInt32],
+                                                                 functionArgumentTypes: FunctionArgumentTypes)? {
         if self.shaders.count == 1,
            let first = self.shaders.first,
            first.key.isEmpty {
-            return first.value
+            return (spirv: first.value,
+                    functionArgumentTypes: self.functionsArgumentTypes.first?.value ?? [])
         }
 
-        return self.shaders[name]
-    }
-
-    internal required init(device: VkMetalDevice,
-                           shaders: [String: [UInt32]]) {
-        self.device = device
-        self.shaders = shaders
-    }
-
-    deinit {
-    }
-
-    public func makeFunction(name: String) -> Function? {
-        guard let spirv = self.getSPIRV(name: name) else {
+        guard let spirv = self.shaders[name] else {
             return nil
         }
 
-        return VkMetalFunction(device: self.device.device,
-                               spirv: spirv)
+        return (spirv: spirv,
+                functionArgumentTypes: self.functionsArgumentTypes[name] ?? [])
     }
 
-    public func makeFunction(name: String,
-                             constantValues: FunctionConstantValues) throws -> Function {
-        guard let spirv = self.getSPIRV(name: name) else {
+    internal required init(device: VkMetalDevice,
+                           shaders: [String: [UInt32]],
+                           functionsArgumentTypes: [String: FunctionArgumentTypes] = [:]) {
+        self.device = device
+        self.shaders = shaders
+        self.functionsArgumentTypes = functionsArgumentTypes
+    }
+
+    public func makeFunction(name: String) -> Function? {
+        guard let (spirv: spirv,
+                   functionArgumentTypes: functionArgumentTypes) = self.getFunctionCreationParameters(name: name) else {
             preconditionFailure()
         }
 
         return VkMetalFunction(device: self.device.device,
                                spirv: spirv,
+                               functionArgumentTypes: functionArgumentTypes)
+    }
+
+    public func makeFunction(name: String,
+                             constantValues: FunctionConstantValues) throws -> Function {
+        guard let (spirv: spirv,
+                   functionArgumentTypes: functionArgumentTypes) = self.getFunctionCreationParameters(name: name) else {
+            preconditionFailure()
+        }
+
+        return VkMetalFunction(device: self.device.device,
+                               spirv: spirv,
+                               functionArgumentTypes: functionArgumentTypes,
                                constantValues: constantValues)
     }
 

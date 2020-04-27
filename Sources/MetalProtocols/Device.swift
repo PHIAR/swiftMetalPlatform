@@ -1,5 +1,14 @@
 import Foundation
 
+public enum FunctionArgumentType {
+    case unknown
+    case buffer
+    case constant
+    case sampler
+}
+
+public typealias FunctionArgumentTypes = [FunctionArgumentType]
+
 public protocol Device {
     var isHeadless: Bool { get }
     var isLowPower: Bool { get }
@@ -45,6 +54,9 @@ public protocol Device {
                      options: CompileOptions?) throws -> Library
 
     func makeLibrary(spirv: [UInt32]) -> Library
+
+    func makeLibrary(spirv: [UInt32],
+                     functionArgumentTypes: FunctionArgumentTypes) -> Library
 
     func makeLibrary(URL: URL) throws -> Library
 

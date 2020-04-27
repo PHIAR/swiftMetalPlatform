@@ -20,6 +20,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
         commandBuffer.copyBuffer(srcBuffer: _from.getBuffer(),
                                  dstBuffer: _to.getBuffer(),
                                  regions: [ region ])
+        self.commandBuffer.addTrackedResource(resource: _from)
+        self.commandBuffer.addTrackedResource(resource: _to)
     }
 
     public func copy(from: Buffer,
@@ -56,6 +58,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                         dstImage: _to.getImage(),
                                         dstImageLayout: VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                         regions: [ region ])
+        self.commandBuffer.addTrackedResource(resource: _from)
+        self.commandBuffer.addTrackedResource(resource: _to)
     }
 
     public func fill(buffer: Buffer,
@@ -72,8 +76,12 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                  dstOffset: range.lowerBound,
                                  size: range.count,
                                  data: data)
+        self.commandBuffer.addTrackedResource(resource: _buffer)
     }
 
     public func generateMipmaps(for: Texture) {
+        let _for = `for` as! VkMetalTexture
+
+        self.commandBuffer.addTrackedResource(resource: _for)
     }
 }

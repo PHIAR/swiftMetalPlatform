@@ -9,6 +9,8 @@ typedef struct spirv_descriptor_set_layout_t {
     char const *entry_point;
     VkDescriptorSetLayoutBinding *bindings;
     size_t bindingCount;
+    VkPushConstantRange *pushConstants;
+    size_t pushConstantCount;
 } spirv_descriptor_set_layout_t;
 
 #ifdef __cplusplus

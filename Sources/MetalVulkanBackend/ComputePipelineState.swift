@@ -28,9 +28,9 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
         let descriptorSetLayout = function.getDescriptorSetLayout()
         let entryPoint = function.getEntryPoint()
         let shaderModule = function.getShaderModule()
-        let pipelineLayout = device.createPipelineLayout(descriptorSetLayouts: [
-            descriptorSetLayout,
-        ])
+        let pushConstants = function.getPushConstants()
+        let pipelineLayout = device.createPipelineLayout(descriptorSetLayouts: [ descriptorSetLayout ],
+                                                         pushConstantRanges: pushConstants)
         let pipelineStage = VulkanPipelineShaderStage(stage: VK_SHADER_STAGE_COMPUTE_BIT,
                                                       shaderModule: shaderModule,
                                                       name: entryPoint)
