@@ -151,7 +151,8 @@ internal final class VkMetalDevice: Device {
                                  descriptorCount: 128),
         ]
 
-        let descriptorPool = device.createDescriptorPool(maxSets: maxDescriptorSets,
+        let descriptorPool = device.createDescriptorPool(flags: VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT.rawValue,
+                                                         maxSets: maxDescriptorSets,
                                                          poolSizes: poolSizes)
 
         self.physicalDevice = physicalDevice
