@@ -10,6 +10,12 @@ typedef struct spirv_push_constant_descriptor_t {
     size_t size;
 } spirv_push_constant_descriptor_t;
 
+typedef struct spirv_specialization_constant_t {
+    uint32_t id;
+    size_t offset;
+    size_t size;
+} spirv_specialization_constant_t;
+
 typedef struct spirv_descriptor_set_layout_t {
     char const *entry_point;
     VkDescriptorSetLayoutBinding *bindings;
@@ -17,6 +23,7 @@ typedef struct spirv_descriptor_set_layout_t {
     VkPushConstantRange pushConstantRange;
     spirv_push_constant_descriptor_t *pushConstantDescriptors;
     size_t pushConstantDescriptorCount;
+    spirv_specialization_constant_t workgroupSize[3];
 } spirv_descriptor_set_layout_t;
 
 #ifdef __cplusplus

@@ -21,7 +21,6 @@ spirvReflectCreateDescriptorSetLayout(char const *entry_point,
     compiler.set_enabled_interface_variables(move(activeInterfaceVariables));
 
     auto const &entryPoints = compiler.get_entry_points_and_stages();
-    auto const &specializationConstants = compiler.get_specialization_constants();
     auto const &storageBuffers = shaderResources.storage_buffers;
     auto const &pushConstants = shaderResources.push_constant_buffers;
     auto &&shaderStageFlags = VkShaderStageFlags();
@@ -75,17 +74,36 @@ spirvReflectCreateDescriptorSetLayout(char const *entry_point,
     printf("specializationConstants: %zu\n", specializationConstants.size());
 #endif
 
-    for (auto const &specializationConstant: specializationConstants) {
-    #if SPIRV_REFLECT_ENABLE_LOG
-        printf("    specializationConstant: %s\n", compiler.get_name(specializationConstant.id).c_str());
-        printf("        constant id: %d\n", specializationConstant.constant_id);
-        printf("        binding: %d\n", compiler.get_decoration(specializationConstant.id,
-                                                                spv::DecorationDescriptorSet));
-        printf("        location: %d\n", compiler.get_decoration(specializationConstant.id,
-                                                                spv::DecorationLocation));
-        printf("        set: %d\n", compiler.get_decoration(specializationConstant.id,
-                                                            spv::DecorationBinding));
-    #endif
+    auto &&workgroup_sizes = (spirv_cross::SpecializationConstant[]) {
+        spirv_cross::SpecializationConstant(),
+        spirv_cross::SpecializationConstant(),
+        spirv_cross::SpecializationConstant(),
+    };
+    auto const &workgroup_size_id = compiler.get_work_group_size_specialization_constants(workgroup_sizes[0],
+                                                                                          workgroup_sizes[1],
+                                                                                          workgroup_sizes[2]);
+
+    if (workgroup_size_id) {
+        auto const &workgroup_size_type = compiler.get_constant(workgroup_size_id);
+        auto const &workgroup_size = compiler.get_type(workgroup_size_type.constant_type);
+        auto const &workgroup_size_elements = workgroup_size_type.vector_size();
+
+        assert(workgroup_size.basetype == spirv_cross::SPIRType::BaseType::UInt);
+        assert(workgroup_size_elements == 3);
+
+        for (auto i = size_t(0); i < workgroup_size_elements; ++i) {
+            auto const &constant_id = workgroup_sizes[i].id;
+            auto const &constant = compiler.get_constant(constant_id);
+            auto const &type = compiler.get_type(constant.constant_type);
+
+            assert(type.basetype == spirv_cross::SPIRType::BaseType::UInt);
+            assert(constant.vector_size() == 1);
+            assert(constant.columns() == 1);
+
+            descriptor_set_layout.workgroupSize[i].id = constant_id;
+            descriptor_set_layout.workgroupSize[i].offset = i * sizeof(uint32_t);
+            descriptor_set_layout.workgroupSize[i].size = sizeof(uint32_t);
+        }
     }
 
 #if SPIRV_REFLECT_ENABLE_LOG

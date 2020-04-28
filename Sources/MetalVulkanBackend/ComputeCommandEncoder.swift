@@ -17,13 +17,20 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
                                          descriptorSets: [ self.descriptorSet! ])
     }
 
-    private func getEffectiveBufferIndex(index: Int,
+    private func bindPipeline(workgroupSize: Size?) {
+        let computePipelineState = self.computePipelineState!
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.bindPipeline(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
+                                   pipeline: computePipelineState.getPipeline(workgroupSize: workgroupSize))
+    }
+
+    private func getEffectiveBufferIndex(function: VkMetalFunction,
+                                         index: Int,
                                          argumentType: FunctionArgumentType) -> Int {
         // NB: Buffers and POD types are interleaved in CL but are separated in
         //     Vulkan into storage buffers and push constants.
 
-        let computePipelineState = self.computePipelineState!
-        let function = computePipelineState.getFunction()
         let functionArgumentTypes = function.getFunctionArgumentTypes()
 
         guard !functionArgumentTypes.isEmpty else {
@@ -41,6 +48,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
         self.bindDescriptorSet()
+        self.bindPipeline(workgroupSize: threadsPerThreadgroup)
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
@@ -51,6 +59,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
         self.bindDescriptorSet()
+        self.bindPipeline(workgroupSize: threadsPerThreadgroup)
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
@@ -59,9 +68,11 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
     public func setBuffer(_ buffer: Buffer?,
                           offset: Int,
                           index: Int) {
+        let computePipelineState = self.computePipelineState!
         let _buffer = buffer as! VkMetalBuffer
         let descriptorSet = self.descriptorSet!
-        let dstBinding = self.getEffectiveBufferIndex(index: index,
+        let dstBinding = self.getEffectiveBufferIndex(function: computePipelineState.getFunction(),
+                                                      index: index,
                                                       argumentType: .buffer)
         let bufferInfo = VkDescriptorBufferInfo(buffer: _buffer.buffer.getBuffer(),
                                                 offset: VkDeviceSize(offset),
@@ -96,7 +107,8 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let pipelineLayout = computePipelineState.getPipelineLayout()
         let function = computePipelineState.getFunction()
         let pushConstantDescriptors = function.getPushConstantDescriptors()
-        let dstBinding = self.getEffectiveBufferIndex(index: index,
+        let dstBinding = self.getEffectiveBufferIndex(function: computePipelineState.getFunction(),
+                                                      index: index,
                                                       argumentType: .constant)
         let pushConstantDescriptor = pushConstantDescriptors[dstBinding]
 
@@ -121,10 +133,6 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
 
         self.commandBuffer.addDescriptorSet(descriptorSets: descriptorSets)
 
-        let commandBuffer = self.commandBuffer.getCommandBuffer()
-
-        commandBuffer.bindPipeline(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
-                                   pipeline: computePipelineState.getPipeline())
         self.computePipelineState = computePipelineState
         self.descriptorSet = descriptorSets[0]
     }

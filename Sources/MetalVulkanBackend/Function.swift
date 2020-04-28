@@ -5,6 +5,17 @@ import MetalProtocols
 import SPIRVCross
 import SPIRVReflect
 
+internal extension spirv_specialization_constant_t {
+    func toVkSpecializationMapEntry() -> VkSpecializationMapEntry {
+        var specializationMapEntry = VkSpecializationMapEntry()
+
+        specializationMapEntry.constantID = self.id
+        specializationMapEntry.offset = UInt32(self.offset)
+        specializationMapEntry.size = self.size
+        return specializationMapEntry
+    }
+}
+
 internal final class VkMetalFunction: Function {
     private let entryPoint: String
     private let shaderModule: VulkanShaderModule
@@ -13,6 +24,7 @@ internal final class VkMetalFunction: Function {
     private let pushConstantRange: VkPushConstantRange
     private let pushConstantDescriptors: [spirv_push_constant_descriptor_t]
     private let functionArgumentTypes: FunctionArgumentTypes
+    private let workgroupSize: [VkSpecializationMapEntry]?
 
     internal convenience init(device: VulkanDevice,
                               spirv: [UInt32],
@@ -23,9 +35,11 @@ internal final class VkMetalFunction: Function {
         let shaderModule = device.createShaderModule(code: spirv.withUnsafeBufferPointer { Data(buffer: $0) })
         let (bindings: bindings,
              pushConstantRange: pushConstantRange,
-             pushConstantDescriptors: pushConstantDescriptors): (bindings: [VulkanDescriptorSetLayoutBinding],
-                                                                 pushConstantRange: VkPushConstantRange,
-                                                                 pushConstantDescriptors: [spirv_push_constant_descriptor_t]) = spirv.withUnsafeBytes { _spirv in
+             pushConstantDescriptors: pushConstantDescriptors,
+             workgroupSize: workgroupSize): (bindings: [VulkanDescriptorSetLayoutBinding],
+                                             pushConstantRange: VkPushConstantRange,
+                                             pushConstantDescriptors: [spirv_push_constant_descriptor_t],
+                                             workgroupSize: [VkSpecializationMapEntry]?) = spirv.withUnsafeBytes { _spirv in
             var descriptorSetLayout = spirv_descriptor_set_layout_t()
             let success = name.withCString { spirvReflectCreateDescriptorSetLayout($0,
                                                                                    _spirv.baseAddress!.assumingMemoryBound(to: UInt32.self),
@@ -47,11 +61,17 @@ internal final class VkMetalFunction: Function {
 
             let pushConstantDescriptors = Array(UnsafeBufferPointer(start: descriptorSetLayout.pushConstantDescriptors,
                                                                     count: descriptorSetLayout.pushConstantDescriptorCount))
+            let workgroupSize: [VkSpecializationMapEntry]? = (descriptorSetLayout.workgroupSize.0.size == 0) ? nil : [
+                descriptorSetLayout.workgroupSize.0,
+                descriptorSetLayout.workgroupSize.1,
+                descriptorSetLayout.workgroupSize.2,
+            ].map { $0.toVkSpecializationMapEntry() }
 
             spirvReflectDestroyDescriptorSetLayout(&descriptorSetLayout)
             return (bindings: bindings,
                     pushConstantRange: descriptorSetLayout.pushConstantRange,
-                    pushConstantDescriptors: pushConstantDescriptors)
+                    pushConstantDescriptors: pushConstantDescriptors,
+                    workgroupSize: workgroupSize)
         }
 
         let _descriptorSetLayout = device.createDescriptorSetLayout(bindings: bindings)
@@ -62,7 +82,8 @@ internal final class VkMetalFunction: Function {
                   descriptorSetLayout:  _descriptorSetLayout,
                   pushConstantRange: pushConstantRange,
                   pushConstantDescriptors: pushConstantDescriptors,
-                  functionArgumentTypes: functionArgumentTypes)
+                  functionArgumentTypes: functionArgumentTypes,
+                  workgroupSize: workgroupSize)
     }
 
     internal required init(entryPoint: String,
@@ -71,7 +92,8 @@ internal final class VkMetalFunction: Function {
                            descriptorSetLayout: VulkanDescriptorSetLayout,
                            pushConstantRange: VkPushConstantRange,
                            pushConstantDescriptors: [spirv_push_constant_descriptor_t],
-                           functionArgumentTypes: FunctionArgumentTypes) {
+                           functionArgumentTypes: FunctionArgumentTypes,
+                           workgroupSize: [VkSpecializationMapEntry]?) {
         self.entryPoint = entryPoint
         self.shaderModule = shaderModule
         self.constantValues = constantValues
@@ -79,6 +101,7 @@ internal final class VkMetalFunction: Function {
         self.pushConstantRange = pushConstantRange
         self.pushConstantDescriptors = pushConstantDescriptors
         self.functionArgumentTypes = functionArgumentTypes
+        self.workgroupSize = workgroupSize
     }
 
     public func clone() -> VkMetalFunction? {
@@ -88,7 +111,8 @@ internal final class VkMetalFunction: Function {
                                descriptorSetLayout: self.descriptorSetLayout,
                                pushConstantRange: self.pushConstantRange,
                                pushConstantDescriptors: self.pushConstantDescriptors,
-                               functionArgumentTypes: functionArgumentTypes)
+                               functionArgumentTypes: self.functionArgumentTypes,
+                               workgroupSize: self.workgroupSize)
     }
 
     public func getDescriptorSetLayout() -> VulkanDescriptorSetLayout {
@@ -113,5 +137,9 @@ internal final class VkMetalFunction: Function {
 
     public func getShaderModule() -> VulkanShaderModule {
         return self.shaderModule
+    }
+
+    public func getWorkgroupSize() -> [VkSpecializationMapEntry] {
+        return self.workgroupSize ?? []
     }
 }
