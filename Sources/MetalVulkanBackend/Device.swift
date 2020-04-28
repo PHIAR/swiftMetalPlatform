@@ -117,9 +117,22 @@ internal final class VkMetalDevice: Device {
         self.deviceMemBaseAddrAlign = Int(physicalDeviceProperties.limits.minMemoryMapAlignment)
 
         let queueFamilyProperties = physicalDevice.getQueueFamilyProperties()
-        let queueFamily = 0
 
         precondition(!queueFamilyProperties.isEmpty)
+
+        var queueFamily = -1
+
+        for _queueFamily in 0..<queueFamilyProperties.count {
+            guard (queueFamilyProperties[_queueFamily].queueFlags & (VK_QUEUE_GRAPHICS_BIT.rawValue |
+                                                                     VK_QUEUE_GRAPHICS_BIT.rawValue)) != 0 else {
+                continue
+            }
+
+            queueFamily = _queueFamily
+            break
+        }
+
+        precondition(queueFamily != -1)
 
         var features = VkPhysicalDeviceFeatures()
 
