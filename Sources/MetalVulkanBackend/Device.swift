@@ -142,6 +142,7 @@ internal final class VkMetalDevice: Device {
 
         var extensions: [String] = [
             "VK_KHR_storage_buffer_storage_class",
+            "VK_KHR_variable_pointers",
         ]
 
     #if os(Android)
