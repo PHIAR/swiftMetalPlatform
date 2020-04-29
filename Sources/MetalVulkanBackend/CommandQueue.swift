@@ -76,7 +76,16 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     public func makeCommandBuffer() -> CommandBuffer? {
         return self.executionQueue.sync {
             if self.commandBuffers.isEmpty {
-                self._device.device.waitIdle()
+                let device = self._device.device
+                let fence = device.createFence()
+
+                device.resetFences(fences: [ fence ])
+                self.deviceQueue.submit(waitSemaphores: [],
+                                        waitDstStageMask: [],
+                                        commandBuffers: [],
+                                        signalSemaphores: [],
+                                        fence: fence)
+                device.waitForFences(fences: [ fence ])
             }
 
             precondition(!self.commandBuffers.isEmpty)
