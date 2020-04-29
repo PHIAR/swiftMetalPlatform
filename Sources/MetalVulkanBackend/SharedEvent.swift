@@ -83,7 +83,6 @@ public final class VkMetalSharedEventListener: SharedEventListener {
                     let value = eventEntry.value
 
                     guard eventEntry.event.getEventStatus() else {
-                        usleep(1000)
                         continue
                     }
 
@@ -91,6 +90,10 @@ public final class VkMetalSharedEventListener: SharedEventListener {
                                  value)
                     self.events[i] = nil
                     handledEvents += 1
+                }
+
+                if handledEvents < self.events.count {
+                    usleep(100)
                 }
             }
 
