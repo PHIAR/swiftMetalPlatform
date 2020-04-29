@@ -31,7 +31,7 @@ internal final class VkMetalBuffer: VkMetalResource,
                                                 usage: VK_BUFFER_USAGE_STORAGE_BUFFER_BIT.rawValue |
                                                        VK_BUFFER_USAGE_TRANSFER_DST_BIT.rawValue |
                                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT.rawValue,
-                                                queueFamilies: [ 0 ])
+                                                queueFamilies: [ device.sharedMemoryTypeIndex ])
 
         buffer.bindBufferMemory(deviceMemory: deviceMemory,
                                 offset: 0)

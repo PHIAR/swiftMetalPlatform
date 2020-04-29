@@ -55,12 +55,14 @@ internal final class VkMetalDevice: Device {
     }()
 
     private let deviceMemBaseAddrAlign: Int
-    private let queueFamily: Int
     private let deviceQueue: VulkanQueue
     private let descriptorPool: VulkanDescriptorPool
 
     internal let physicalDevice: VulkanPhysicalDevice
     internal let device: VulkanDevice
+    internal let queueFamily: Int
+    internal let sharedMemoryTypeIndex: Int
+    internal let privateMemoryTypeIndex: Int
 
     public var isHeadless: Bool {
         return true
@@ -154,6 +156,27 @@ internal final class VkMetalDevice: Device {
                                                  layerNames: [],
                                                  extensions: extensions,
                                                  features: features)
+        var memoryProperties = physicalDevice.getPhysicalDeviceMemoryProperties()
+        var privateMemoryTypeIndex = -1
+        var sharedMemoryTypeIndex = -1
+        print("memoryProperties.memoryTypeCount: \(memoryProperties.memoryTypeCount)")
+        let _ = { (memoryTypes: UnsafePointer <VkMemoryType>) in
+            for memoryTypeIndex in 0..<Int(memoryProperties.memoryTypeCount) {
+                let memoryType = memoryTypes[memoryTypeIndex].propertyFlags
+                if (memoryType & (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.rawValue |
+                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT.rawValue)) != 0 {
+                    sharedMemoryTypeIndex = memoryTypeIndex
+                }
+
+                if (memoryType & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT.rawValue) != 0 {
+                    privateMemoryTypeIndex = memoryTypeIndex
+                }
+            }
+        }(&memoryProperties.memoryTypes.0)
+
+        precondition(privateMemoryTypeIndex != -1)
+        precondition(sharedMemoryTypeIndex != -1)
+
         let maxDescriptorSets = 128
         let poolSizes = [
             VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
@@ -171,6 +194,8 @@ internal final class VkMetalDevice: Device {
         self.physicalDevice = physicalDevice
         self.device = device
         self.queueFamily = queueFamily
+        self.privateMemoryTypeIndex = privateMemoryTypeIndex
+        self.sharedMemoryTypeIndex = sharedMemoryTypeIndex
         self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamily,
                                                  queue: 0)
         self.descriptorPool = descriptorPool
