@@ -66,6 +66,10 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     internal func beginCommandBuffer() {
         self.executionQueue.sync {
+            let device = self._device.device
+
+            device.resetFences(fences: [ fence ])
+
             self.commandBuffer.begin()
             self.scheduledGroup.enter()
             self.completionGroup.enter()

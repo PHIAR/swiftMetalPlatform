@@ -65,7 +65,6 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                 let device = self._device.device
 
                 device.waitForFences(fences: [ fence ])
-                device.resetFences(fences: [ fence ])
                 commandBuffer.setCompleted()
                 self.executionQueue.async {
                     self.commandBuffers[commandBuffer.getIndex()] = commandBuffer
