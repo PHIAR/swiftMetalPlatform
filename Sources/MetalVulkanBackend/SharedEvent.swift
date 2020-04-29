@@ -66,26 +66,30 @@ public final class VkMetalSharedEventListener: SharedEventListener {
     private let executionQueue = DispatchQueue(label: "VkMetalSharedEventListener.executionQueue")
     private var events: [(value: UInt64,
                           event: VulkanEvent,
-                          notification: SharedEvent.NotificationBlock)] = []
+                          notification: SharedEvent.NotificationBlock)?] = []
 
     private func eventHandler(device: VulkanDevice,
                               sharedEvent: SharedEvent) {
         self.executionQueue.async {
-            let events = self.events
             var handledEvents = 0
 
-            while handledEvents != events.count {
-                for i in 0..<events.count {
-                    let event = events[i].event
-                    let notification = events[i].notification
-                    let value = events[i].value
+            while handledEvents != self.events.count {
+                for i in 0..<self.events.count {
+                    guard let eventEntry = self.events[i] else {
+                        continue
+                    }
 
-                    guard event.getEventStatus() else {
+                    let notification = eventEntry.notification
+                    let value = eventEntry.value
+
+                    guard eventEntry.event.getEventStatus() else {
+                        usleep(1000)
                         continue
                     }
 
                     notification(sharedEvent,
                                  value)
+                    self.events[i] = nil
                     handledEvents += 1
                 }
             }

@@ -7,6 +7,19 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
     private var computePipelineState: VkMetalComputePipelineState? = nil
     private var descriptorSet: VulkanDescriptorSet? = nil
 
+    private func allocateDescriptorSet() {
+        let computePipelineState = self.computePipelineState!
+        let function = computePipelineState.getFunction()
+        let descriptorSetLayout = function.getDescriptorSetLayout()
+        let device = self._device.device
+        let descriptorSets = device.allocateDescriptorSets(descriptorPool: self.descriptorPool,
+                                                           setLayouts: [ descriptorSetLayout ])
+
+        self.commandBuffer.addDescriptorSet(descriptorSets: descriptorSets)
+
+        self.descriptorSet = descriptorSets[0]
+    }
+
     private func bindDescriptorSet() {
         let computePipelineState = self.computePipelineState!
         let pipelineLayout = computePipelineState.getPipelineLayout()
@@ -52,6 +65,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
+        self.allocateDescriptorSet()
     }
 
     public func dispatchThreads(_ threadsPerGrid: Size,
@@ -63,6 +77,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         commandBuffer.dispatch(groupCountX: threadsPerGrid.width,
                                groupCountY: threadsPerGrid.height,
                                groupCountZ: threadsPerGrid.depth)
+        self.allocateDescriptorSet()
     }
 
     public func setBuffer(_ buffer: Buffer?,
@@ -125,16 +140,9 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
 
     public func setComputePipelineState(_ state: ComputePipelineState) {
         let computePipelineState = state as! VkMetalComputePipelineState
-        let function = computePipelineState.getFunction()
-        let descriptorSetLayout = function.getDescriptorSetLayout()
-        let device = self._device.device
-        let descriptorSets = device.allocateDescriptorSets(descriptorPool: self.descriptorPool,
-                                                           setLayouts: [ descriptorSetLayout ])
-
-        self.commandBuffer.addDescriptorSet(descriptorSets: descriptorSets)
 
         self.computePipelineState = computePipelineState
-        self.descriptorSet = descriptorSets[0]
+        self.allocateDescriptorSet()
     }
 
     public func setTexture(_ texture: Texture?,

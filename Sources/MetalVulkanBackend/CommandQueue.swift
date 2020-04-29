@@ -5,7 +5,7 @@ import MetalProtocols
 
 internal final class VkMetalCommandQueue: VkMetalObject,
                                           CommandQueue {
-    private static let maxCommandBufferCount = 16
+    private static let maxCommandBufferCount = 32
 
     private let deviceQueue: VulkanQueue
     private let descriptorPool: VulkanDescriptorPool
@@ -13,6 +13,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     private var commandBuffers: [Int: VkMetalCommandBuffer] = [:]
 
     internal let executionQueue = DispatchQueue(label: "VkMetalCommandQueue.executionQueue")
+    internal let commandQueue = DispatchQueue(label: "VkMetalCommandQueue.commandQueue")
 
     public override var description: String {
         return """
@@ -51,7 +52,6 @@ internal final class VkMetalCommandQueue: VkMetalObject,
 
     internal func commit(commandBuffer: VkMetalCommandBuffer) {
         self.executionQueue.async {
-            let device = self._device.device
             let fence = commandBuffer.getFence()
 
             self.deviceQueue.submit(waitSemaphores: [],
@@ -60,10 +60,17 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                                     signalSemaphores: [],
                                     fence: fence)
             commandBuffer.setScheduled()
-            device.waitForFences(fences: [ fence ])
-            device.resetFences(fences: [ fence ])
-            commandBuffer.setCompleted()
-            self.commandBuffers[commandBuffer.getIndex()] = commandBuffer
+
+            self.commandQueue.async {
+                let device = self._device.device
+
+                device.waitForFences(fences: [ fence ])
+                device.resetFences(fences: [ fence ])
+                commandBuffer.setCompleted()
+                self.executionQueue.async {
+                    self.commandBuffers[commandBuffer.getIndex()] = commandBuffer
+                }
+            }
         }
     }
 
@@ -73,7 +80,14 @@ internal final class VkMetalCommandQueue: VkMetalObject,
                 self._device.device.waitIdle()
             }
 
-            return self.commandBuffers.removeValue(forKey: self.commandBuffers.first!.key)
+            precondition(!self.commandBuffers.isEmpty)
+
+            guard let commandBuffer = self.commandBuffers.removeValue(forKey: self.commandBuffers.first!.key) else {
+                preconditionFailure()
+            }
+
+            commandBuffer.beginCommandBuffer()
+            return commandBuffer
         }
     }
 

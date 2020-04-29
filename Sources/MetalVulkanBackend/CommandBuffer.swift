@@ -30,22 +30,6 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         return self._commandQueue
     }
 
-    private func begin() {
-        self.commandBuffer.begin()
-        self.scheduledGroup.enter()
-        self.completionGroup.enter()
-
-        self.completionGroup.notify(queue: self.executionQueue) {
-            self.descriptorSets.removeAll()
-            self.trackedEvents.removeAll()
-            self.trackedResources.removeAll()
-        }
-
-        let _device = self._device.device
-
-        _device.resetFences(fences: [ fence ])
-    }
-
     internal init(commandQueue: VkMetalCommandQueue,
                   descriptorPool: VulkanDescriptorPool,
                   commandBuffer: VulkanCommandBuffer,
@@ -62,7 +46,6 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         self.index = index
         self.retained = retained
         super.init(device: device)
-        self.begin()
     }
 
     internal func addDescriptorSet(descriptorSets: [VulkanDescriptorSet]) {
@@ -81,6 +64,20 @@ internal class VkMetalCommandBuffer: VkMetalObject,
         }
     }
 
+    internal func beginCommandBuffer() {
+        self.executionQueue.sync {
+            self.commandBuffer.begin()
+            self.scheduledGroup.enter()
+            self.completionGroup.enter()
+
+            self.completionGroup.notify(queue: self.executionQueue) {
+                self.descriptorSets.removeAll()
+                self.trackedEvents.removeAll()
+                self.trackedResources.removeAll()
+            }
+        }
+    }
+
     internal func getCommandBuffer() -> VulkanCommandBuffer {
         return self.commandBuffer
     }
@@ -95,7 +92,6 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     internal func setCompleted() {
         self.completionGroup.leave()
-        self.begin()
     }
 
     internal func setScheduled() {
@@ -123,9 +119,15 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func commit() {
-        self.executionQueue.sync {
+        self.addScheduledHandler { _ in
             self.sharedEvents.forEach { $0.issueListeners() }
+        }
+
+        self.addCompletedHandler { _ in
             self.sharedEvents.removeAll()
+        }
+
+        self.executionQueue.sync {
             self.commandBuffer.end()
             self._commandQueue.commit(commandBuffer: self)
         }
@@ -133,11 +135,13 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     public func encodeSignalEvent(_ event: Event,
                                   value: UInt64) {
-        if let sharedEvent = event as? VkMetalSharedEvent,
-           let _sharedEvent = sharedEvent.getEvent() {
-            self.trackedEvents.append(_sharedEvent)
-            self.commandBuffer.set(event: _sharedEvent)
-            _ = self.executionQueue.sync { self.sharedEvents.insert(sharedEvent) }
+        self.executionQueue.sync {
+            if let sharedEvent = event as? VkMetalSharedEvent,
+               let _sharedEvent = sharedEvent.getEvent() {
+                self.trackedEvents.append(_sharedEvent)
+                self.commandBuffer.set(event: _sharedEvent)
+                self.sharedEvents.insert(sharedEvent)
+            }
         }
     }
 

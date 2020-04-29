@@ -44,17 +44,22 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
 
     internal func getPipeline(workgroupSize: Size?) -> VulkanPipeline {
         return self.executionQueue.sync {
-            let _workgroupSize = [ workgroupSize ?? Size(width: 1,
+            let _workgroupSize = workgroupSize ?? Size(width: 1,
                                                        height: 1,
-                                                       depth: 1) ]
+                                                       depth: 1)
+            let specializationData = [
+                UInt32(_workgroupSize.width),
+                UInt32(_workgroupSize.height),
+                UInt32(_workgroupSize.depth),
+            ]
 
-            guard let pipeline = self.specializedPipelines[_workgroupSize[0]] else {
+            guard let pipeline = self.specializedPipelines[_workgroupSize] else {
                 let device = self.device
                 let function = self.function
                 let shaderModule = function.getShaderModule()
                 let entryPoint = function.getEntryPoint()
                 let specializationConstants = function.getWorkgroupSize()
-                let pipeline: VulkanPipeline = _workgroupSize.withUnsafeBytes {
+                let pipeline: VulkanPipeline = specializationData.withUnsafeBytes {
                     let pipelineStage = VulkanPipelineShaderStage(stage: VK_SHADER_STAGE_COMPUTE_BIT,
                                                                   shaderModule: shaderModule,
                                                                   name: entryPoint,
@@ -63,7 +68,7 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
                     let pipeline = device.createComputePipeline(stage: pipelineStage,
                                                                 layout: pipelineLayout)
 
-                    self.specializedPipelines[_workgroupSize[0]] = pipeline
+                    self.specializedPipelines[_workgroupSize] = pipeline
 
                     return pipeline
                 }
