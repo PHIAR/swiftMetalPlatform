@@ -6,13 +6,56 @@ public typealias __DispatchData = DispatchData
 public typealias CFTimeInterval = Double
 #endif
 
+public enum BlendFactor {
+    case blendAlpha
+    case blendColor
+    case destinationAlpha
+    case destinationColor
+    case one
+    case oneMinusBlendAlpha
+    case oneMinusBlendColor
+    case oneMinusDestinationAlpha
+    case oneMinusDestinationColor
+    case oneMinusSourceAlpha
+    case oneMinusSource1Alpha
+    case oneMinusSourceColor
+    case oneMinusSource1Color
+    case sourceAlpha
+    case source1Alpha
+    case sourceAlphaSaturated
+    case sourceColor
+    case source1Color
+    case zero
+}
+
+public enum BlendOperation {
+    case add
+    case max
+    case min
+    case reverseSubtract
+    case subtract
+}
+
 public enum CaptureDestination {
     case developerTools
     case gpuTraceDocument
 }
 
+public enum CompareFunction {
+    case always
+    case equal
+    case greater
+    case greaterEqual
+    case less
+    case lessEqual
+    case never
+    case notEqual
+}
+
 public enum CullMode {
     case none
+    case back
+    case front
 }
 
 public enum CPUCacheMode {
@@ -102,8 +145,8 @@ public enum LoadAction {
     case load
 }
 
-public enum PixelFormat {
-    case unknown
+public enum PixelFormat: Int {
+    case invalid
     case bgr10_xr
     case bgra8Unorm
     case rgba8Unorm
@@ -188,6 +231,21 @@ public enum Winding {
 }
 
 public protocol Drawable {
+}
+
+public struct ColorWriteMask: OptionSet {
+    public static let all = ColorWriteMask([ .red, .blue, .green, .alpha ])
+    public static let none = ColorWriteMask([])
+    public static let red = ColorWriteMask(rawValue: 0x8)
+    public static let green = ColorWriteMask(rawValue: 0x4)
+    public static let blue = ColorWriteMask(rawValue: 0x2)
+    public static let alpha = ColorWriteMask(rawValue: 0x1)
+
+    public var rawValue: UInt
+
+    public init(rawValue: UInt) {
+        self.rawValue = rawValue
+    }
 }
 
 public struct FunctionConstantValues {
@@ -457,6 +515,14 @@ public class RenderPassDescriptor: Equatable {
 
 public class RenderPipelineColorAttachmentDescriptor {
     public var pixelFormat: PixelFormat = .bgra8Unorm
+    public var writeMask: ColorWriteMask = .all
+    public var isBlendingEnabled = false
+    public var rgbBlendOperation: BlendOperation = .add
+    public var alphaBlendOperation: BlendOperation = .add
+    public var destinationRGBBlendFactor: BlendFactor = .zero
+    public var destinationAlphaBlendFactor: BlendFactor = .zero
+    public var sourceRGBBlendFactor: BlendFactor = .one
+    public var sourceAlphaBlendFactor: BlendFactor = .one
 }
 
 public class RenderPipelineColorAttachmentDescriptorArray {
@@ -551,7 +617,7 @@ public final class TextureDescriptor {
     }
 
     public var textureType: TextureType = .unknown
-    public var pixelFormat: PixelFormat = .unknown
+    public var pixelFormat: PixelFormat = .invalid
     public var width = 0
     public var height = 0
     public var depth = 0

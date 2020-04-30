@@ -12,14 +12,18 @@ public func MTLSizeMake(_ width: Int = 0,
                    depth: depth)
 }
 
+public typealias MTLBlendFactor = BlendFactor
+public typealias MTLBlendOperation = BlendOperation
 public typealias MTLBlitCommandEncoder = BlitCommandEncoder
 public typealias MTLBuffer = Buffer
 public typealias MTLCaptureDescriptor = CaptureDescriptor
 public typealias MTLCaptureManager = CaptureManager
 public typealias MTLCaptureScope = CaptureScope
+public typealias MTLColorWriteMask = ColorWriteMask
 public typealias MTLCommandBuffer = CommandBuffer
 public typealias MTLCommandEncoder = CommandEncoder
 public typealias MTLCommandQueue = CommandQueue
+public typealias MTLCompareFunction = CompareFunction
 public typealias MTLCompileOptions = CompileOptions
 public typealias MTLComputeCommandEncoder = ComputeCommandEncoder
 public typealias MTLComputePipelineState = ComputePipelineState
