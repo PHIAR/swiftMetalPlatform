@@ -305,6 +305,11 @@ public enum Winding {
 }
 
 public protocol Drawable {
+    var texture: Texture { get }
+    var layer: Layer { get }
+}
+
+public protocol Layer {
 }
 
 public struct ColorWriteMask: OptionSet {

@@ -1,8 +1,10 @@
 import swiftVulkan
 import vulkan
 import Foundation
+import MetalProtocols
 
-open class VisualLayer: VulkanVisualLayer {
+open class VisualLayer: VulkanVisualLayer,
+                        Layer {
     private let device: Device
 
     private static func getQueueFamilyIndex(physicalDevice: VulkanPhysicalDevice,

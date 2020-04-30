@@ -1,4 +1,6 @@
 import swiftVulkan
+import vulkan
+import Foundation
 import MetalProtocols
 
 internal final class VkMetalTexture: VkMetalResource,
