@@ -191,6 +191,17 @@ public enum SamplerMipFilter: UInt {
     case notMipmapped = 0
 }
 
+public enum StencilOperation {
+    case decrementClamp
+    case decrementWrap
+    case incrementClamp
+    case incrementWrap
+    case invert
+    case keep
+    case replace
+    case zero
+}
+
 public enum StorageMode: Int {
     case managed = 0
     case memoryless = 1
@@ -223,6 +234,14 @@ public enum TextureType {
 public enum TriangleFillMode {
     case fill
     case lines
+}
+
+public enum VertexStepFunction {
+    case constant
+    case perInstance
+    case perPatch
+    case perPatchControlPoint
+    case perVertex
 }
 
 public enum Winding {
@@ -422,6 +441,17 @@ public final class CompileOptions {
     }
 }
 
+public final class DepthStencilDescriptor {
+    public var depthCompareFunction: CompareFunction = .always
+    public var isDepthWriteEnabled = false
+    public var backFaceStencil = StencilDescriptor()
+    public var frontFaceStencil = StencilDescriptor()
+    public var label = ""
+
+    public init() {
+    }
+}
+
 public final class HeapDescriptor {
     private var _storageMode: StorageMode = .shared
     private var _cpuCacheMode: CPUCacheMode = .defaultCache
@@ -472,10 +502,13 @@ public final class HeapDescriptor {
     }
 }
 
-public class RenderPassColorAttachmentDescriptor {
+public class RenderPassAttachmentDescriptor {
     public var texture: Texture? = nil
     public var loadAction: LoadAction = .dontCare
     public var storeAction: StoreAction = .dontCare
+}
+
+public class RenderPassColorAttachmentDescriptor: RenderPassAttachmentDescriptor {
 }
 
 public class RenderPassColorAttachmentDescriptorArray {
@@ -501,8 +534,28 @@ public class RenderPassColorAttachmentDescriptorArray {
     }
 }
 
+public class RenderPassDepthAttachmentDescriptor: RenderPassAttachmentDescriptor {
+    public override init() {
+    }
+}
+
+public class RenderPassStencilAttachmentDescriptor: RenderPassAttachmentDescriptor {
+    public override init() {
+    }
+}
+
 public class RenderPassDescriptor: Equatable {
     public var colorAttachments = RenderPassColorAttachmentDescriptorArray()
+    public var depthAttachment: RenderPassDepthAttachmentDescriptor!
+    public var stencilAttachment: RenderPassStencilAttachmentDescriptor!
+    public var renderTargetArrayLength = 0
+    public var renderTargetWidth = 0
+    public var renderTargetHeight = 0
+    public var imageblockSampleLength = 0
+    public var threadgroupMemoryLength = 0
+    public var tileWidth = 0
+    public var tileHeight = 0
+    public var defaultRasterSampleCount = 0
 
     public static func == (lhs: RenderPassDescriptor,
                            rhs: RenderPassDescriptor) -> Bool {
@@ -551,7 +604,21 @@ public class RenderPipelineColorAttachmentDescriptorArray {
 public final class RenderPipelineDescriptor: Equatable {
     public var vertexFunction: Function? = nil
     public var fragmentFunction: Function? = nil
+    public var vertexDescriptor: VertexDescriptor? = nil
     public var colorAttachments = RenderPipelineColorAttachmentDescriptorArray()
+    public var depthAttachmentPixelFormat: PixelFormat = .invalid
+    public var stencilAttachmentPixelFormat: PixelFormat = .invalid
+    public var sampleCount = 1
+    public var isAlphaToCoverageEnabled = false
+    public var isAlphaToOneEnabled = false
+    public var isRasterizationEnabled = false
+    public var rasterSampleCount = 1
+    public var maxTessellationFactor = 16
+    public var isTessellationFactorScaleEnabled = false
+    public var tessellationOutputWindingOrder: Winding = .clockwise
+    public var label = ""
+    public var supportIndirectCommandBuffers = false
+    public var maxVertexAmplificationCount = 0
 
     public static func == (lhs: RenderPipelineDescriptor,
                            rhs: RenderPipelineDescriptor) -> Bool {
@@ -562,7 +629,7 @@ public final class RenderPipelineDescriptor: Equatable {
     }
 }
 
-public final class SamplerDescriptor {
+public final class SamplerDescriptor: Equatable {
     public var normalizedCoordinates = true
     public var rAddressMode: SamplerAddressMode = .clampToEdge
     public var sAddressMode: SamplerAddressMode = .clampToEdge
@@ -576,7 +643,30 @@ public final class SamplerDescriptor {
     public var lodAverage = false
     public var maxAnisotropy = 1
 
+    public static func == (lhs: SamplerDescriptor,
+                           rhs: SamplerDescriptor) -> Bool {
+        return false
+    }
+
     public init() {
+    }
+
+    public func copy() -> Any {
+        let samplerDescriptor = SamplerDescriptor()
+
+        samplerDescriptor.normalizedCoordinates = normalizedCoordinates
+        samplerDescriptor.rAddressMode = rAddressMode
+        samplerDescriptor.sAddressMode = sAddressMode
+        samplerDescriptor.tAddressMode = tAddressMode
+        samplerDescriptor.borderColor = borderColor
+        samplerDescriptor.minFilter = minFilter
+        samplerDescriptor.magFilter = magFilter
+        samplerDescriptor.mipFilter = mipFilter
+        samplerDescriptor.lodMinClamp = lodMinClamp
+        samplerDescriptor.lodMaxClamp = lodMaxClamp
+        samplerDescriptor.lodAverage = lodAverage
+        samplerDescriptor.maxAnisotropy = maxAnisotropy
+        return samplerDescriptor
     }
 }
 
@@ -598,6 +688,18 @@ open class SharedEventListener {
 
     public init(dispatchQueue: DispatchQueue) {
         self._dispatchQueue = dispatchQueue
+    }
+}
+
+public final class StencilDescriptor {
+    public var depthFailureOperation: StencilOperation = .keep
+    public var depthStencilPassOperation: StencilOperation = .keep
+    public var stencilCompareFunction: CompareFunction = .less
+    public var stencilFailureOperation: StencilOperation = .keep
+    public var readMask = UInt32(0xFFFFFFFF)
+    public var writeMask = UInt32(0xFFFFFFFF)
+
+    public init() {
     }
 }
 
@@ -630,6 +732,20 @@ public final class TextureDescriptor {
     public var allowGPUOptimizedContents = true
     public var usage: TextureUsage = [ .shaderRead ]
 
+    public init() {
+    }
+}
+
+public final class VertexBufferLayoutDescriptor {
+    public var stepFunction: VertexStepFunction = .perVertex
+    public var stepRate = 1
+    public var stride = 0
+
+    public init() {
+    }
+}
+
+public final class VertexDescriptor {
     public init() {
     }
 }
