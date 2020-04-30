@@ -18,7 +18,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let computePipelineState = self.computePipelineState!
         let pipelineLayout = computePipelineState.getPipelineLayout()
 
-        self.bindDescriptorSet(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
+        self.bindDescriptorSet(pipelineBindPoint: .compute,
                                pipelineLayout: pipelineLayout)
     }
 
@@ -26,7 +26,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let computePipelineState = self.computePipelineState!
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
-        commandBuffer.bindPipeline(pipelineBindPoint: VK_PIPELINE_BIND_POINT_COMPUTE,
+        commandBuffer.bindPipeline(pipelineBindPoint: .compute,
                                    pipeline: computePipelineState.getPipeline(workgroupSize: workgroupSize))
     }
 

@@ -25,7 +25,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
         self.descriptorSet = descriptorSets[0]
     }
 
-    internal func bindDescriptorSet(pipelineBindPoint: VkPipelineBindPoint,
+    internal func bindDescriptorSet(pipelineBindPoint: VulkanPipelineBindPoint,
                                     pipelineLayout: VulkanPipelineLayout) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
