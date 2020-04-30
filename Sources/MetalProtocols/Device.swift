@@ -38,13 +38,15 @@ public protocol Device {
 
     func makeComputePipelineState(function: Function) throws -> ComputePipelineState
 
-    func makeEvent() -> Event?
-
-    func makeHeap(descriptor: HeapDescriptor) -> Heap?
-
     func makeDefaultLibrary() -> Library?
 
     func makeDefaultLibrary(bundle: Bundle) throws -> Library
+
+    func makeDepthStencilState(descriptor: DepthStencilDescriptor) -> DepthStencilState?
+
+    func makeEvent() -> Event?
+
+    func makeHeap(descriptor: HeapDescriptor) -> Heap?
 
     func makeLibrary(data: __DispatchData) throws -> Library
 

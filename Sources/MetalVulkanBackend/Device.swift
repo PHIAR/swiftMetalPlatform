@@ -160,7 +160,7 @@ internal final class VkMetalDevice: Device {
         var memoryProperties = physicalDevice.getPhysicalDeviceMemoryProperties()
         var privateMemoryTypeIndex = -1
         var sharedMemoryTypeIndex = -1
-        print("memoryProperties.memoryTypeCount: \(memoryProperties.memoryTypeCount)")
+
         let _ = { (memoryTypes: UnsafePointer <VkMemoryType>) in
             for memoryTypeIndex in 0..<Int(memoryProperties.memoryTypeCount) {
                 let memoryType = memoryTypes[memoryTypeIndex].propertyFlags
@@ -200,9 +200,6 @@ internal final class VkMetalDevice: Device {
         self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamily,
                                                  queue: 0)
         self.descriptorPool = descriptorPool
-    }
-
-    deinit {
     }
 
     private func makeBuffer(length: Int,
@@ -299,6 +296,10 @@ internal final class VkMetalDevice: Device {
 
         return VkMetalLibrary(device: self,
                               shaders: shaders)
+    }
+
+    public func makeDepthStencilState(descriptor: DepthStencilDescriptor) -> DepthStencilState? {
+        return nil
     }
 
     public func makeEvent() -> Event? {
