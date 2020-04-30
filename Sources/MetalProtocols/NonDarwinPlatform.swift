@@ -736,6 +736,18 @@ public final class TextureDescriptor {
     }
 }
 
+public final class VertexAttributeDescriptor {
+}
+
+public final class VertexAttributeDescriptorArray {
+    public init() {
+    }
+
+    public subscript(index: Int) ->  VertexBufferLayoutDescriptor! {
+        return nil
+    }
+}
+
 public final class VertexBufferLayoutDescriptor {
     public var stepFunction: VertexStepFunction = .perVertex
     public var stepRate = 1
@@ -745,7 +757,22 @@ public final class VertexBufferLayoutDescriptor {
     }
 }
 
-public final class VertexDescriptor {
+public final class VertexBufferLayoutDescriptorArray {
     public init() {
+    }
+
+    public subscript(index: Int) ->  VertexBufferLayoutDescriptor! {
+        return nil
+    }
+}
+
+public final class VertexDescriptor {
+    public var attributes = VertexAttributeDescriptorArray()
+    public var layouts = VertexBufferLayoutDescriptorArray()
+
+    public init() {
+    }
+
+    public func reset() {
     }
 }
