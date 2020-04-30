@@ -236,6 +236,61 @@ public enum TriangleFillMode {
     case lines
 }
 
+public enum VertexFormat {
+    case invalid
+    case char
+    case char2
+    case char3
+    case char4
+    case charNormalized
+    case char2Normalized
+    case char3Normalized
+    case char4Normalized
+    case float
+    case float2
+    case float3
+    case float4
+    case half
+    case half2
+    case half3
+    case half4
+    case int
+    case int2
+    case int3
+    case int4
+    case int1010102Normalized
+    case short
+    case short2
+    case short3
+    case short4
+    case shortNormalized
+    case short2Normalized
+    case short3Normalized
+    case short4Normalized
+    case uchar
+    case uchar2
+    case uchar3
+    case uchar4
+    case ucharNormalized
+    case uchar2Normalized
+    case uchar3Normalized
+    case uchar4Normalized
+    case uchar4Normalized_bgra
+    case uint
+    case uint2
+    case uint3
+    case uint4
+    case uint1010102Normalized
+    case ushort
+    case ushort2
+    case ushort3
+    case ushort4
+    case ushortNormalized
+    case ushort2Normalized
+    case ushort3Normalized
+    case ushort4Normalized
+}
+
 public enum VertexStepFunction {
     case constant
     case perInstance
@@ -737,14 +792,34 @@ public final class TextureDescriptor {
 }
 
 public final class VertexAttributeDescriptor {
+    public var format: VertexFormat = .invalid
+    public var offset = 0
+    public var bufferIndex = 0
+
+    public init() {
+    }
 }
 
 public final class VertexAttributeDescriptorArray {
-    public init() {
+    private var descriptors: [VertexAttributeDescriptor] = []
+
+    private func resizeDescriptors(size: Int) {
+        if size >= self.descriptors.count {
+            self.descriptors += Array(repeating: VertexAttributeDescriptor(),
+                                      count: 1 + size - self.descriptors.count)
+        }
     }
 
-    public subscript(index: Int) ->  VertexBufferLayoutDescriptor! {
-        return nil
+    public subscript(index: Int) ->  VertexAttributeDescriptor! {
+        get {
+            self.resizeDescriptors(size: index)
+            return self.descriptors[index]
+        }
+
+        set {
+            self.resizeDescriptors(size: index)
+            self.descriptors[index] = newValue
+        }
     }
 }
 
@@ -758,11 +833,25 @@ public final class VertexBufferLayoutDescriptor {
 }
 
 public final class VertexBufferLayoutDescriptorArray {
-    public init() {
+    private var descriptors: [VertexBufferLayoutDescriptor] = []
+
+    private func resizeDescriptors(size: Int) {
+        if size >= self.descriptors.count {
+            self.descriptors += Array(repeating: VertexBufferLayoutDescriptor(),
+                                      count: 1 + size - self.descriptors.count)
+        }
     }
 
     public subscript(index: Int) ->  VertexBufferLayoutDescriptor! {
-        return nil
+        get {
+            self.resizeDescriptors(size: index)
+            return self.descriptors[index]
+        }
+
+        set {
+            self.resizeDescriptors(size: index)
+            self.descriptors[index] = newValue
+        }
     }
 }
 
