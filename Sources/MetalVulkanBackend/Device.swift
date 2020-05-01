@@ -364,7 +364,14 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeRenderPipelineState(descriptor: RenderPipelineDescriptor) throws -> RenderPipelineState {
-        return VkMetalRenderPipelineState()
+        guard let vertexFunction = descriptor.vertexFunction as? VkMetalFunction,
+              let fragmentFunction = descriptor.fragmentFunction as? VkMetalFunction else {
+            preconditionFailure()
+        }
+
+        return VkMetalRenderPipelineState(device: self.device,
+                                          vertexFunction: vertexFunction,
+                                          fragmentFunction: fragmentFunction)
     }
 
     public func makeSharedEvent() -> MTLSharedEvent? {

@@ -15,29 +15,74 @@ extension DynamicRenderState: Hashable {
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
     private var currentRenderState = DynamicRenderState()
-    private var renderPasses: [DynamicRenderState: VulkanRenderPass] = [:]
-    private var renderPipelineState: RenderPipelineState? = nil
+    private var renderPass: VulkanRenderPass
+    private var graphicsPipelines: [DynamicRenderState: VulkanPipeline] = [:]
+    private var renderPipelineState: VkMetalRenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
-    private let attachments: [VkAttachmentDescription]
-    private let subpasses: [VkSubpassDescription]
-    private let dependencies: [VkSubpassDependency]
 
-    private func getRenderPass() -> VulkanRenderPass {
+    private func getRenderPipeline() -> VulkanPipeline {
+        if let graphicsPipeline = self.graphicsPipelines[self.currentRenderState] {
+            return graphicsPipeline
+        }
+
         let device = self.commandBuffer._device.device
+        let stages: [VulkanPipelineShaderStage] = []
+        let vertexInputState = VulkanPipelineVertexInputState()
+        let inputAssemblyState = VulkanPipelineInputAssemblyState(topology: VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+                                                                  primitiveRestartEnable: false)
+        let viewportState = VulkanPipelineViewportState(viewports: [],
+                                                        scissors: [])
+        let rasterizationState = VulkanPipelineRasterizationState(depthClampEnable: false,
+                                                                  rasterizerDiscardEnable: false,
+                                                                  polygonMode: .fill,
+                                                                  cullMode: .back,
+                                                                  frontFace: .counterClockwise,
+                                                                  depthBiasEnable: false,
+                                                                  depthBiasConstantFactor: 0.0,
+                                                                  depthBiasClamp: 0.0,
+                                                                  depthBiasSlopeFactor: 0.0,
+                                                                  lineWidth: 1.0)
+        let multisampleState = VulkanPipelineMultisampleState(rasterizationSamples: VK_SAMPLE_COUNT_1_BIT,
+                                                              sampleShadingEnable: false,
+                                                              minSampleShading: 0,
+                                                              sampleMask: [],
+                                                              alphaToCoverageEnable: false,
+                                                              alphaToOneEnable: false)
+        let colorBlendState = VulkanPipelineColorBlendState(logicOpEnable: false,
+                                                            attachments: [])
+        let dynamicStates: [VulkanDynamicState] = [
+            .blendConstants,
+            .depthBias,
+            .depthBounds,
+            .lineWidth,
+            .scissor,
+            .stencilCompareMask,
+            .stencilReference,
+            .stencilWriteMask,
+            .viewport,
+        ]
+        let renderPipelineState = self.renderPipelineState!
+        let pipelineLayout = renderPipelineState.getPipelineLayout()
+        let renderPass = self.renderPass
+        let graphicsPipeline = device.createGraphicsPipeline(stages: stages,
+                                                             vertexInputState: vertexInputState,
+                                                             inputAssemblyState: inputAssemblyState,
+                                                             viewportState: viewportState,
+                                                             rasterizationState: rasterizationState,
+                                                             multisampleState: multisampleState,
+                                                             colorBlendState: colorBlendState,
+                                                             dynamicStates: dynamicStates,
+                                                             pipelineLayout: pipelineLayout,
+                                                             renderPass: renderPass)
 
-        return device.createRenderPass(attachments: self.attachments,
-                                       subpasses: self.subpasses,
-                                       dependencies: self.dependencies)
+        self.graphicsPipelines[self.currentRenderState] = graphicsPipeline
+        return graphicsPipeline
     }
 
     public init(descriptorPool: VulkanDescriptorPool,
                 commandBuffer: VkMetalCommandBuffer,
-                attachments: [VkAttachmentDescription],
-                subpasses: [VkSubpassDescription],
-                dependencies: [VkSubpassDependency]) {
-        self.attachments = attachments
-        self.subpasses = subpasses
-        self.dependencies = dependencies
+                renderPass: VulkanRenderPass) {
+        self.renderPass = renderPass
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
     }
@@ -83,7 +128,9 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setRenderPipelineState(_ renderPipelineState: RenderPipelineState) {
-        self.renderPipelineState = renderPipelineState
+        let _renderPipelineState = renderPipelineState as! VkMetalRenderPipelineState
+
+        self.renderPipelineState = _renderPipelineState
     }
 
     public func setScissorRect(_ rect: ScissorRect) {
