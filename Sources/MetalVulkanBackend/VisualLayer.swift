@@ -3,9 +3,9 @@ import vulkan
 import Foundation
 import MetalProtocols
 
-open class VisualLayer: VulkanVisualLayer,
-                        Layer {
+open class VisualLayer: Layer {
     private let device: Device
+    private let layer: VulkanVisualLayer
 
     private static func getQueueFamilyIndex(physicalDevice: VulkanPhysicalDevice,
                                             surface: VulkanSurface,
@@ -50,13 +50,13 @@ open class VisualLayer: VulkanVisualLayer,
         let queueFamilyIndex = VisualLayer.getQueueFamilyIndex(physicalDevice: physicalDevice,
                                                                surface: surface,
                                                                flags: VkQueueFlags(VK_QUEUE_GRAPHICS_BIT.rawValue))
+        let layer = VulkanVisualLayer(device: _device,
+                                      queueFamilyIndex: queueFamilyIndex,
+                                      queueIndex: 0,
+                                      surface: surface)
 
-        self.device = device                                     
-
-        super.init(device: _device,
-                   queueFamilyIndex: queueFamilyIndex,
-                   queueIndex: 0,
-                   surface: surface)
+        self.device = device
+        self.layer = layer
     }
 
     public func getDevice() -> Device {
