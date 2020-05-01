@@ -22,6 +22,16 @@ internal extension DynamicRenderState {
             return .none
         }
     }
+
+    func getVulkanFrontFace() -> VulkanFrontFace {
+        switch self.winding {
+        case .clockwise:
+            return .clockwise
+
+        case .counterClockwise:
+            return .counterClockwise
+        }
+    }
 }
 
 internal final class VkMetalRenderPipelineState: RenderPipelineState,
@@ -81,7 +91,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                                   rasterizerDiscardEnable: false,
                                                                   polygonMode: .fill,
                                                                   cullMode: renderState.getVulkanCullModeFlags(),
-                                                                  frontFace: .counterClockwise,
+                                                                  frontFace: renderState.getVulkanFrontFace(),
                                                                   depthBiasEnable: false,
                                                                   depthBiasConstantFactor: 0.0,
                                                                   depthBiasClamp: 0.0,
