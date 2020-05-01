@@ -53,34 +53,53 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setScissorRect(_ rect: ScissorRect) {
+        self.setScissorRects([ rect ])
     }
 
     public func setScissorRects(_ scissorRects: [ScissorRect]) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
-        let scissors = scissorRects.map {
-            VkRect2D(offset: VkOffset2D(x: Int32($0.x),
-                                        y: Int32($0.y)),
-                     extent: VkExtent2D(width: UInt32($0.width),
-                                        height: UInt32($0.height)))
-        }
+        let scissors = scissorRects.map { VkRect2D(offset: VkOffset2D(x: Int32($0.x),
+                                                                      y: Int32($0.y)),
+                                                   extent: VkExtent2D(width: UInt32($0.width),
+                                                                      height: UInt32($0.height))) }
 
         commandBuffer.setScissor(scissors: scissors)
     }
 
     public func setStencilReferenceValue(_ referenceValue: UInt32) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.setStencilCompareMask(faceMask: VK_STENCIL_FACE_FRONT_AND_BACK.rawValue,
+                                            compareMask: referenceValue)
     }
 
     public func setStencilReferenceValues(front frontReferenceValue: UInt32,
                                           back backReferenceValue: UInt32) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.setStencilCompareMask(faceMask: VK_STENCIL_FACE_FRONT_BIT.rawValue,
+                                            compareMask: frontReferenceValue)
+        commandBuffer.setStencilCompareMask(faceMask: VK_STENCIL_FACE_BACK_BIT.rawValue,
+                                            compareMask: backReferenceValue)
     }
 
     public func setTriangleFillMode(_ fillMode: TriangleFillMode) {
     }
 
     public func setViewport(_ viewport: Viewport) {
+        self.setViewports([ viewport ])
     }
 
     public func setViewports(_ viewports: [Viewport]) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let _viewports = viewports.map { VkViewport(x: Float($0.originX),
+                                                    y: Float($0.originY),
+                                                    width: Float($0.width),
+                                                    height: Float($0.height),
+                                                    minDepth: Float($0.znear),
+                                                    maxDepth: Float($0.zfar)) }
+
+        commandBuffer.setViewport(viewports: _viewports)
     }
 
     public func setVertexBuffer(_ buffer: Buffer?,
