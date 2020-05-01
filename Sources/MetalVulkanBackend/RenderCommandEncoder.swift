@@ -2,16 +2,42 @@ import swiftVulkan
 import vulkan
 import MetalProtocols
 
+internal struct DynamicRenderState {
+    internal var cullMode: CullMode = .none
+    internal var depthClipMode: DepthClipMode = .clip
+    internal var winding: Winding = .counterClockwise
+    internal var fillMode: TriangleFillMode = .fill
+}
+
+extension DynamicRenderState: Hashable {
+}
+
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
-    private let renderPass: VulkanRenderPass
+    private var currentRenderState = DynamicRenderState()
+    private var renderPasses: [DynamicRenderState: VulkanRenderPass] = [:]
     private var renderPipelineState: RenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
+    private let attachments: [VkAttachmentDescription]
+    private let subpasses: [VkSubpassDescription]
+    private let dependencies: [VkSubpassDependency]
+
+    private func getRenderPass() -> VulkanRenderPass {
+        let device = self.commandBuffer._device.device
+
+        return device.createRenderPass(attachments: self.attachments,
+                                       subpasses: self.subpasses,
+                                       dependencies: self.dependencies)
+    }
 
     public init(descriptorPool: VulkanDescriptorPool,
                 commandBuffer: VkMetalCommandBuffer,
-                renderPass: VulkanRenderPass) {
-        self.renderPass = renderPass
+                attachments: [VkAttachmentDescription],
+                subpasses: [VkSubpassDescription],
+                dependencies: [VkSubpassDependency]) {
+        self.attachments = attachments
+        self.subpasses = subpasses
+        self.dependencies = dependencies
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
     }
@@ -30,15 +56,22 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         ])
     }
 
-    public func setCullMode(_ cullMode: MTLCullMode) {
+    public func setCullMode(_ cullMode: CullMode) {
+        self.currentRenderState.cullMode = cullMode
     }
 
     public func setDepthBias(_ depthBias: Float,
                              slopeScale: Float,
                              clamp: Float) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.set(depthBiasConstantFactor: depthBias,
+                          depthBiasClamp: clamp,
+                          depthBiasSlopeFactor: slopeScale)
     }
 
     public func setDepthClipMode(_ depthClipMode: DepthClipMode) {
+        self.currentRenderState.depthClipMode = depthClipMode
     }
 
     public func setDepthStencilState(_ depthStencilState: DepthStencilState?) {
@@ -46,6 +79,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setFrontFacing(_ winding: Winding) {
+        self.currentRenderState.winding = winding
     }
 
     public func setRenderPipelineState(_ renderPipelineState: RenderPipelineState) {
@@ -84,6 +118,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setTriangleFillMode(_ fillMode: TriangleFillMode) {
+        self.currentRenderState.fillMode = fillMode
     }
 
     public func setViewport(_ viewport: Viewport) {
@@ -201,17 +236,35 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                vertexCount: Int,
                                instanceCount: Int,
                                baseInstance: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.draw(vertexCount: vertexCount,
+                           instanceCount: instanceCount,
+                           firstVertex: vertexStart,
+                           firstInstance: baseInstance)
     }
 
     public func drawPrimitives(type primitiveType: PrimitiveType,
                                vertexStart: Int,
                                vertexCount: Int,
                                instanceCount: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.draw(vertexCount: vertexCount,
+                           instanceCount: instanceCount,
+                           firstVertex: vertexStart,
+                           firstInstance: 0)
     }
 
     public func drawPrimitives(type primitiveType: PrimitiveType,
                                vertexStart: Int,
                                vertexCount: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.draw(vertexCount: vertexCount,
+                           instanceCount: 1,
+                           firstVertex: vertexStart,
+                           firstInstance: 0)
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -222,6 +275,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       instanceCount: Int,
                                       baseVertex: Int,
                                       baseInstance: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.drawIndexed(indexCount: indexCount,
+                                  instanceCount: instanceCount,
+                                  firstIndex: baseVertex,
+                                  vertexOffset: indexBufferOffset,
+                                  firstInstance: baseInstance)
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -230,6 +290,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexBuffer: Buffer,
                                       indexBufferOffset: Int,
                                       instanceCount: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.drawIndexed(indexCount: indexCount,
+                                  instanceCount: instanceCount,
+                                  firstIndex: 0,
+                                  vertexOffset: indexBufferOffset,
+                                  firstInstance: 0)
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -237,6 +304,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexType: IndexType,
                                       indexBuffer: Buffer,
                                       indexBufferOffset: Int) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.drawIndexed(indexCount: indexCount,
+                                  instanceCount: 1,
+                                  firstIndex: 0,
+                                  vertexOffset: indexBufferOffset,
+                                  firstInstance: 0)
     }
 
     public override func endEncoding() {
