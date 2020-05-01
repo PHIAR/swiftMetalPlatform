@@ -1,11 +1,33 @@
+import swiftVulkan
+import vulkan
 import MetalProtocols
 
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
+    private let renderPass: VulkanRenderPass
+    private var renderPipelineState: RenderPipelineState? = nil
+    private var depthStencilState: DepthStencilState? = nil
+
+    public init(descriptorPool: VulkanDescriptorPool,
+                commandBuffer: VkMetalCommandBuffer,
+                renderPass: VulkanRenderPass) {
+        self.renderPass = renderPass
+        super.init(descriptorPool: descriptorPool,
+                   commandBuffer: commandBuffer)
+    }
+
     public func setBlendColor(red: Float,
                               green: Float,
                               blue: Float,
                               alpha: Float) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.set(blendConstants: [
+            red,
+            green,
+            blue,
+            alpha,
+        ])
     }
 
     public func setCullMode(_ cullMode: MTLCullMode) {
@@ -20,18 +42,29 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public func setDepthStencilState(_ depthStencilState: DepthStencilState?) {
+        self.depthStencilState = depthStencilState
     }
 
     public func setFrontFacing(_ winding: Winding) {
     }
 
     public func setRenderPipelineState(_ renderPipelineState: RenderPipelineState) {
+        self.renderPipelineState = renderPipelineState
     }
 
     public func setScissorRect(_ rect: ScissorRect) {
     }
 
     public func setScissorRects(_ scissorRects: [ScissorRect]) {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let scissors = scissorRects.map {
+            VkRect2D(offset: VkOffset2D(x: Int32($0.x),
+                                        y: Int32($0.y)),
+                     extent: VkExtent2D(width: UInt32($0.width),
+                                        height: UInt32($0.height)))
+        }
+
+        commandBuffer.setScissor(scissors: scissors)
     }
 
     public func setStencilReferenceValue(_ referenceValue: UInt32) {
@@ -185,5 +218,12 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexType: IndexType,
                                       indexBuffer: Buffer,
                                       indexBufferOffset: Int) {
+    }
+
+    public override func endEncoding() {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.endRenderPass()
+        super.endEncoding()
     }
 }
