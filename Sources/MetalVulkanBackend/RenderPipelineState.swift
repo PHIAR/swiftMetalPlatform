@@ -2,14 +2,26 @@ import swiftVulkan
 import vulkan
 import MetalProtocols
 
-internal struct DynamicRenderState {
+internal struct DynamicRenderState: Hashable {
     internal var cullMode: CullMode = .none
     internal var depthClipMode: DepthClipMode = .clip
     internal var winding: Winding = .counterClockwise
     internal var fillMode: TriangleFillMode = .fill
 }
 
-extension DynamicRenderState: Hashable {
+internal extension DynamicRenderState {
+    func getVulkanCullModeFlags() -> VulkanCullModeFlags {
+        switch self.cullMode {
+        case .back:
+            return .back
+
+        case .front:
+            return .front
+
+        case .none:
+            return .none
+        }
+    }
 }
 
 internal final class VkMetalRenderPipelineState: RenderPipelineState,
@@ -68,7 +80,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
         let rasterizationState = VulkanPipelineRasterizationState(depthClampEnable: false,
                                                                   rasterizerDiscardEnable: false,
                                                                   polygonMode: .fill,
-                                                                  cullMode: .back,
+                                                                  cullMode: renderState.getVulkanCullModeFlags(),
                                                                   frontFace: .counterClockwise,
                                                                   depthBiasEnable: false,
                                                                   depthBiasConstantFactor: 0.0,
