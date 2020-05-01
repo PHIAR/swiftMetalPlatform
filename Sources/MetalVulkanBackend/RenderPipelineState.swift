@@ -32,6 +32,16 @@ internal extension DynamicRenderState {
             return .counterClockwise
         }
     }
+
+    func getVulkanPolygonMode() -> VulkanPolygonMode {
+        switch self.fillMode {
+        case .fill:
+            return .fill
+
+        case .lines:
+            return .line
+        }
+    }
 }
 
 internal final class VkMetalRenderPipelineState: RenderPipelineState,
@@ -89,7 +99,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                         scissors: [])
         let rasterizationState = VulkanPipelineRasterizationState(depthClampEnable: false,
                                                                   rasterizerDiscardEnable: false,
-                                                                  polygonMode: .fill,
+                                                                  polygonMode: renderState.getVulkanPolygonMode(),
                                                                   cullMode: renderState.getVulkanCullModeFlags(),
                                                                   frontFace: renderState.getVulkanFrontFace(),
                                                                   depthBiasEnable: false,
