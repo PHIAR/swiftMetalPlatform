@@ -810,7 +810,7 @@ public final class VertexAttributeDescriptor {
 }
 
 public final class VertexAttributeDescriptorArray {
-    private var descriptors: [VertexAttributeDescriptor] = []
+    public var descriptors: [VertexAttributeDescriptor] = []
 
     private func resizeDescriptors(size: Int) {
         if size >= self.descriptors.count {
@@ -842,7 +842,7 @@ public final class VertexBufferLayoutDescriptor {
 }
 
 public final class VertexBufferLayoutDescriptorArray {
-    private var descriptors: [VertexBufferLayoutDescriptor] = []
+    public var descriptors: [VertexBufferLayoutDescriptor] = []
 
     private func resizeDescriptors(size: Int) {
         if size >= self.descriptors.count {
