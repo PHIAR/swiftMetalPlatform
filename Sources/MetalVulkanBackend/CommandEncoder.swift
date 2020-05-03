@@ -6,7 +6,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
                                       CommandEncoder {
     internal let descriptorPool: VulkanDescriptorPool
     internal let commandBuffer: VkMetalCommandBuffer
-    internal var descriptorSet: VulkanDescriptorSet? = nil
+    internal var descriptorSets: [VulkanDescriptorSet] = []
 
     internal init(descriptorPool: VulkanDescriptorPool,
                   commandBuffer: VkMetalCommandBuffer) {
@@ -15,14 +15,13 @@ internal class VkMetalCommandEncoder: VkMetalObject,
         super.init(device: commandBuffer._device)
     }
 
-    internal func allocateDescriptorSet(descriptorSetLayout: VulkanDescriptorSetLayout) {
+    internal func allocateDescriptorSets(descriptorSetLayouts: [VulkanDescriptorSetLayout]) {
         let device = self._device.device
         let descriptorSets = device.allocateDescriptorSets(descriptorPool: self.descriptorPool,
-                                                           setLayouts: [ descriptorSetLayout ])
+                                                           setLayouts: descriptorSetLayouts)
 
         self.commandBuffer.addDescriptorSet(descriptorSets: descriptorSets)
-
-        self.descriptorSet = descriptorSets[0]
+        self.descriptorSets = descriptorSets
     }
 
     internal func bindDescriptorSet(pipelineBindPoint: VulkanPipelineBindPoint,
@@ -31,7 +30,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
 
         commandBuffer.bindDescriptorSets(pipelineBindPoint: pipelineBindPoint,
                                          pipelineLayout: pipelineLayout,
-                                         descriptorSets: [ self.descriptorSet! ])
+                                         descriptorSets: self.descriptorSets)
     }
 
     internal func getDstBindingIndex(function: VkMetalFunction,
@@ -52,7 +51,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
                       index: Int,
                       argumentType: FunctionArgumentType) {
         let _buffer = buffer.buffer
-        let descriptorSet = self.descriptorSet!
+        let descriptorSet = self.descriptorSets[0]
         let dstBinding = self.getDstBindingIndex(function: function,
                                                  index: index,
                                                  argumentType: argumentType)

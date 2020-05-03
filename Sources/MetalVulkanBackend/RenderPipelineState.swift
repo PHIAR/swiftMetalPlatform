@@ -84,8 +84,9 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
         return self.fragmentFunction
     }
 
-    private func getGraphicsPipeline(renderState: DynamicRenderState,
-                                     renderPass: VulkanRenderPass) -> VulkanPipeline {
+    internal func getGraphicsPipeline(topology: VulkanPrimitiveTopology,
+                                      renderState: DynamicRenderState,
+                                      renderPass: VulkanRenderPass) -> VulkanPipeline {
         if let graphicsPipeline = self.specializedPipelines[renderState] {
             return graphicsPipeline
         }
@@ -93,7 +94,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
         let device = self.device
         let stages: [VulkanPipelineShaderStage] = []
         let vertexInputState = VulkanPipelineVertexInputState()
-        let inputAssemblyState = VulkanPipelineInputAssemblyState(topology: VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+        let inputAssemblyState = VulkanPipelineInputAssemblyState(topology: topology,
                                                                   primitiveRestartEnable: false)
         let viewportState = VulkanPipelineViewportState(viewports: [],
                                                         scissors: [])

@@ -2,12 +2,59 @@ import swiftVulkan
 import vulkan
 import MetalProtocols
 
+internal extension PrimitiveType {
+    func toVulkanPrimitiveTopology() -> VulkanPrimitiveTopology {
+        switch self {
+        case .line:
+            return .lineList
+
+        case .lineStrip:
+            return .lineStrip
+
+        case .point:
+            return .pointList
+
+        case .triangle:
+            return .triangleList
+
+        case .triangleStrip:
+            return .triangleStrip
+        }
+    }
+}
+
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
     private var currentRenderState = DynamicRenderState()
     private var renderPass: VulkanRenderPass
     private var renderPipelineState: VkMetalRenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
+
+    internal func allocateDescriptorSets() {
+        let renderPipelineState = self.renderPipelineState!
+        let vertexFunction = renderPipelineState.getFragmentFunction()
+        let vertexDescriptorSetLayout = vertexFunction.getDescriptorSetLayout()
+        let fragmentFunction = renderPipelineState.getFragmentFunction()
+        let fragmentDescriptorSetLayout = fragmentFunction.getDescriptorSetLayout()
+
+        self.allocateDescriptorSets(descriptorSetLayouts: [
+            vertexDescriptorSetLayout,
+            fragmentDescriptorSetLayout,
+        ])
+    }
+
+    private func bindPipeline(primitiveType: PrimitiveType) {
+        let renderPipelineState = self.renderPipelineState!
+        let topology = primitiveType.toVulkanPrimitiveTopology()
+        let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
+                                                                       renderState: self.currentRenderState,
+                                                                       renderPass: self.renderPass)
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
+                                   pipeline: graphicsPipeline)
+
+    }
 
     public init(descriptorPool: VulkanDescriptorPool,
                 commandBuffer: VkMetalCommandBuffer,
@@ -279,10 +326,12 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                baseInstance: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.draw(vertexCount: vertexCount,
                            instanceCount: instanceCount,
                            firstVertex: vertexStart,
                            firstInstance: baseInstance)
+        self.allocateDescriptorSets()
     }
 
     public func drawPrimitives(type primitiveType: PrimitiveType,
@@ -291,10 +340,12 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                instanceCount: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.draw(vertexCount: vertexCount,
                            instanceCount: instanceCount,
                            firstVertex: vertexStart,
                            firstInstance: 0)
+        self.allocateDescriptorSets()
     }
 
     public func drawPrimitives(type primitiveType: PrimitiveType,
@@ -302,10 +353,12 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                vertexCount: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.draw(vertexCount: vertexCount,
                            instanceCount: 1,
                            firstVertex: vertexStart,
                            firstInstance: 0)
+        self.allocateDescriptorSets()
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -318,11 +371,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       baseInstance: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: instanceCount,
                                   firstIndex: baseVertex,
                                   vertexOffset: indexBufferOffset,
                                   firstInstance: baseInstance)
+        self.allocateDescriptorSets()
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -333,11 +388,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       instanceCount: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: instanceCount,
                                   firstIndex: 0,
                                   vertexOffset: indexBufferOffset,
                                   firstInstance: 0)
+        self.allocateDescriptorSets()
     }
 
     public func drawIndexedPrimitives(type primitiveType: PrimitiveType,
@@ -347,11 +404,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexBufferOffset: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        self.bindPipeline(primitiveType: primitiveType)
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: 1,
                                   firstIndex: 0,
                                   vertexOffset: indexBufferOffset,
                                   firstInstance: 0)
+        self.allocateDescriptorSets()
     }
 
     public override func endEncoding() {

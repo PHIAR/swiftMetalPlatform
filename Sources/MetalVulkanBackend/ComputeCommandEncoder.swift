@@ -11,7 +11,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         let function = computePipelineState.getFunction()
         let descriptorSetLayout = function.getDescriptorSetLayout()
 
-        self.allocateDescriptorSet(descriptorSetLayout: descriptorSetLayout)
+        self.allocateDescriptorSets(descriptorSetLayouts: [ descriptorSetLayout ])
     }
 
     private func bindDescriptorSet() {
