@@ -370,6 +370,7 @@ internal final class VkMetalDevice: Device {
         }
 
         return VkMetalRenderPipelineState(device: self.device,
+                                          vertexDescriptor: descriptor.vertexDescriptor,
                                           vertexFunction: vertexFunction,
                                           fragmentFunction: fragmentFunction)
     }

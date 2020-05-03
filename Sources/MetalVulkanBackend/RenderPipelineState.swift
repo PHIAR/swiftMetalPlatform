@@ -44,13 +44,37 @@ internal extension DynamicRenderState {
     }
 }
 
+internal extension VertexDescriptor {
+    func getVkVertexInputAttributeDescriptions() -> [VkVertexInputAttributeDescription] {
+        return []
+    }
+
+    func getVkVertexInputBindingDescriptions() -> [VkVertexInputBindingDescription] {
+        return []
+    }
+}
+
 internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                  Equatable {
+    private static let dynamicStates: [VulkanDynamicState] = [
+        .blendConstants,
+        .depthBias,
+        .depthBounds,
+        .lineWidth,
+        .scissor,
+        .stencilCompareMask,
+        .stencilReference,
+        .stencilWriteMask,
+        .viewport,
+    ]
+
     private let device: VulkanDevice
     private let vertexFunction: VkMetalFunction
     private let fragmentFunction: VkMetalFunction
     private let pipelineLayout: VulkanPipelineLayout
     private var specializedPipelines: [DynamicRenderState: VulkanPipeline] = [:]
+    private let vertexInputState: VulkanPipelineVertexInputState
+    private let viewportState: VulkanPipelineViewportState
 
     public static func == (lhs: VkMetalRenderPipelineState,
                            rhs: VkMetalRenderPipelineState) -> Bool {
@@ -58,6 +82,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
     }
 
     internal init(device: VulkanDevice,
+                  vertexDescriptor: VertexDescriptor?,
                   vertexFunction: VkMetalFunction,
                   fragmentFunction: VkMetalFunction) {
         let vertexDescriptorSetLayout = vertexFunction.getDescriptorSetLayout()
@@ -72,12 +97,19 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                  ((fragmentPushConstantRange.size == 0) ? [] : [ fragmentPushConstantRange ])
         let pipelineLayout = device.createPipelineLayout(descriptorSetLayouts: descriptorSetLayouts,
                                                          pushConstantRanges: pushConstantRanges)
-
+        let attributes = vertexDescriptor?.getVkVertexInputAttributeDescriptions() ?? []
+        let bindings = vertexDescriptor?.getVkVertexInputBindingDescriptions() ?? []
+        let vertexInputState = VulkanPipelineVertexInputState(attributes: attributes,
+                                                              bindings: bindings)
+        let viewportState = VulkanPipelineViewportState(viewports: [],
+                                                        scissors: [])
 
         self.device = device
         self.vertexFunction = vertexFunction
         self.fragmentFunction = fragmentFunction
         self.pipelineLayout = pipelineLayout
+        self.vertexInputState = vertexInputState
+        self.viewportState = viewportState
     }
 
     internal func getFragmentFunction() -> VkMetalFunction {
@@ -93,12 +125,8 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
 
         let device = self.device
         let stages: [VulkanPipelineShaderStage] = []
-        let vertexInputState = VulkanPipelineVertexInputState(attributes: [],
-                                                              bindings: [])
         let inputAssemblyState = VulkanPipelineInputAssemblyState(topology: topology,
                                                                   primitiveRestartEnable: false)
-        let viewportState = VulkanPipelineViewportState(viewports: [],
-                                                        scissors: [])
         let rasterizationState = VulkanPipelineRasterizationState(depthClampEnable: false,
                                                                   rasterizerDiscardEnable: false,
                                                                   polygonMode: renderState.getVulkanPolygonMode(),
@@ -117,26 +145,15 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                               alphaToOneEnable: false)
         let colorBlendState = VulkanPipelineColorBlendState(logicOpEnable: false,
                                                             attachments: [])
-        let dynamicStates: [VulkanDynamicState] = [
-            .blendConstants,
-            .depthBias,
-            .depthBounds,
-            .lineWidth,
-            .scissor,
-            .stencilCompareMask,
-            .stencilReference,
-            .stencilWriteMask,
-            .viewport,
-        ]
         let pipelineLayout = self.getPipelineLayout()
         let graphicsPipeline = device.createGraphicsPipeline(stages: stages,
-                                                             vertexInputState: vertexInputState,
+                                                             vertexInputState: self.vertexInputState,
                                                              inputAssemblyState: inputAssemblyState,
-                                                             viewportState: viewportState,
+                                                             viewportState: self.viewportState,
                                                              rasterizationState: rasterizationState,
                                                              multisampleState: multisampleState,
                                                              colorBlendState: colorBlendState,
-                                                             dynamicStates: dynamicStates,
+                                                             dynamicStates: VkMetalRenderPipelineState.dynamicStates,
                                                              pipelineLayout: pipelineLayout,
                                                              renderPass: renderPass)
 
