@@ -233,10 +233,26 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
     public func setVertexTexture(_ texture: Texture?,
                                  index: Int) {
+        guard let _texture = texture as? VkMetalTexture else {
+            return
+        }
+
+        let renderPipelineState = self.renderPipelineState!
+        let function = renderPipelineState.getVertexFunction()
+
+        self.set(texture: _texture,
+                 function: function,
+                 index: index)
     }
 
     public func setVertexTextures(_ textures: [Texture?],
                                   range: Range <Int>) {
+        precondition(textures.count == range.count)
+
+        for i in 0..<range.count {
+            self.setVertexTexture(textures[i],
+                                  index: range.startIndex + i)
+        }
     }
 
     public func setFragmentBuffer(_ buffer: Buffer?,
@@ -311,10 +327,26 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
     public func setFragmentTexture(_ texture: Texture?,
                                    index: Int) {
+        guard let _texture = texture as? VkMetalTexture else {
+            return
+        }
+
+        let renderPipelineState = self.renderPipelineState!
+        let function = renderPipelineState.getFragmentFunction()
+
+        self.set(texture: _texture,
+                 function: function,
+                 index: index)
     }
 
     public func setFragmentTextures(_ textures: [Texture?],
                                     range: Range <Int>) {
+        precondition(textures.count == range.count)
+
+        for i in 0..<range.count {
+            self.setFragmentTexture(textures[i],
+                                    index: range.startIndex + i)
+        }
     }
 
     public func drawPrimitives(type primitiveType: PrimitiveType,
