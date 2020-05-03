@@ -117,11 +117,33 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     public func setVertexBuffer(_ buffer: Buffer?,
                                 offset: Int,
                                 index: Int) {
+        guard let _buffer = buffer as? VkMetalBuffer else {
+            return
+        }
+
+        let renderPipelineState = self.renderPipelineState!
+        let function = renderPipelineState.getVertexFunction()
+
+        self.set(buffer: _buffer,
+                 function: function,
+                 offset: offset,
+                 index: index,
+                 argumentType: .buffer)
     }
 
     public func setVertexBuffers(_ buffers: [Buffer?],
                                  offsets: [Int],
                                  range: Range <Int>) {
+        precondition(buffers.count == range.count)
+
+        for i in 0..<range.count {
+            let buffer = buffers[i]
+            let offset = offsets[i]
+
+            self.setVertexBuffer(buffer,
+                                 offset: offset,
+                                 index: range.startIndex + i)
+        }
     }
 
     public func setVertexBufferOffset(_ offset: Int,
@@ -131,6 +153,16 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     public func setVertexBytes(_ bytes: UnsafeRawPointer,
                                length: Int,
                                index: Int) {
+        let renderPipelineState = self.renderPipelineState!
+        let pipelineLayout = renderPipelineState.getPipelineLayout()
+        let function = renderPipelineState.getVertexFunction()
+
+        self.set(bytes: bytes,
+                 function: function,
+                 pipelineLayout: pipelineLayout,
+                 stageFlags: VK_SHADER_STAGE_VERTEX_BIT.rawValue,
+                 length: length,
+                 index: index)
     }
 
     public func setVertexSamplerState(_ sampler: SamplerState?,
@@ -164,11 +196,33 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     public func setFragmentBuffer(_ buffer: Buffer?,
                                   offset: Int,
                                   index: Int) {
+        guard let _buffer = buffer as? VkMetalBuffer else {
+            return
+        }
+
+        let renderPipelineState = self.renderPipelineState!
+        let function = renderPipelineState.getFragmentFunction()
+
+        self.set(buffer: _buffer,
+                 function: function,
+                 offset: offset,
+                 index: index,
+                 argumentType: .buffer)
     }
 
     public func setFragmentBuffers(_ buffers: [Buffer?],
                                    offsets: [Int],
                                    range: Range <Int>) {
+        precondition(buffers.count == range.count)
+
+        for i in 0..<range.count {
+            let buffer = buffers[i]
+            let offset = offsets[i]
+
+            self.setVertexBuffer(buffer,
+                                 offset: offset,
+                                 index: range.startIndex + i)
+        }
     }
 
     public func setFragmentBufferOffset(_ offset: Int,
@@ -178,6 +232,16 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     public func setFragmentBytes(_ bytes: UnsafeRawPointer,
                                  length: Int,
                                  index: Int) {
+        let renderPipelineState = self.renderPipelineState!
+        let pipelineLayout = renderPipelineState.getPipelineLayout()
+        let function = renderPipelineState.getFragmentFunction()
+
+        self.set(bytes: bytes,
+                 function: function,
+                 pipelineLayout: pipelineLayout,
+                 stageFlags: VK_SHADER_STAGE_FRAGMENT_BIT.rawValue,
+                 length: length,
+                 index: index)
     }
 
     public func setFragmentSamplerState(_ sampler: SamplerState?,
