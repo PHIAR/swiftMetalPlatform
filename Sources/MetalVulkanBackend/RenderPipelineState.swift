@@ -93,7 +93,8 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
 
         let device = self.device
         let stages: [VulkanPipelineShaderStage] = []
-        let vertexInputState = VulkanPipelineVertexInputState()
+        let vertexInputState = VulkanPipelineVertexInputState(attributes: [],
+                                                              bindings: [])
         let inputAssemblyState = VulkanPipelineInputAssemblyState(topology: topology,
                                                                   primitiveRestartEnable: false)
         let viewportState = VulkanPipelineViewportState(viewports: [],
