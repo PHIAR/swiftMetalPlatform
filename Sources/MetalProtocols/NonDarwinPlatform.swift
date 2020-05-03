@@ -872,5 +872,7 @@ public final class VertexDescriptor {
     }
 
     public func reset() {
+        self.attributes = VertexAttributeDescriptorArray()
+        self.layouts = VertexBufferLayoutDescriptorArray()
     }
 }
