@@ -70,8 +70,7 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         self.set(buffer: _buffer,
                  function: function,
                  offset: offset,
-                 index: index,
-                 argumentType: .buffer)
+                 index: index)
     }
 
     public func setBuffers(_ buffers: [Buffer?],

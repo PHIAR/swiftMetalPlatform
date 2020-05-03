@@ -174,8 +174,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         self.set(buffer: _buffer,
                  function: function,
                  offset: offset,
-                 index: index,
-                 argumentType: .buffer)
+                 index: index)
     }
 
     public func setVertexBuffers(_ buffers: [Buffer?],
@@ -253,8 +252,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         self.set(buffer: _buffer,
                  function: function,
                  offset: offset,
-                 index: index,
-                 argumentType: .buffer)
+                 index: index)
     }
 
     public func setFragmentBuffers(_ buffers: [Buffer?],

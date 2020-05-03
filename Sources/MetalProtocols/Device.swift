@@ -4,6 +4,7 @@ public enum FunctionArgumentType {
     case unknown
     case buffer
     case constant
+    case image
     case sampler
 }
 

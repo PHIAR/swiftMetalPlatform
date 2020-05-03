@@ -48,13 +48,12 @@ internal class VkMetalCommandEncoder: VkMetalObject,
     internal func set(buffer: VkMetalBuffer,
                       function: VkMetalFunction,
                       offset: Int,
-                      index: Int,
-                      argumentType: FunctionArgumentType) {
+                      index: Int) {
         let _buffer = buffer.buffer
         let descriptorSet = self.descriptorSets[0]
         let dstBinding = self.getDstBindingIndex(function: function,
                                                  index: index,
-                                                 argumentType: argumentType)
+                                                 argumentType: .buffer)
         let bufferInfo = VkDescriptorBufferInfo(buffer: _buffer.getBuffer(),
                                                 offset: VkDeviceSize(offset),
                                                 range: VK_WHOLE_SIZE)
@@ -87,6 +86,24 @@ internal class VkMetalCommandEncoder: VkMetalObject,
                                     stageFlags: stageFlags,
                                     offset: Int(pushConstantDescriptor.offset),
                                     values: values)
+    }
+
+    internal func set(texture: VkMetalTexture,
+                      function: VkMetalFunction,
+                      index: Int) {
+        let image = texture.getImage()
+        let descriptorSet = self.descriptorSets[0]
+        let dstBinding = self.getDstBindingIndex(function: function,
+                                                 index: index,
+                                                 argumentType: .image)
+        let imageInfo = VkDescriptorImageInfo(sampler: nil,
+                                              imageView: image.getImage(),
+                                              imageLayout: VK_IMAGE_LAYOUT_GENERAL)
+
+        descriptorSet.writeDescriptorSet(dstBinding: dstBinding,
+                                         descriptorType: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                         imageInfos: [ imageInfo ])
+        self.commandBuffer.addTrackedResource(resource: texture)
     }
 
     public func endEncoding() {
