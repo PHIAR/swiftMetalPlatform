@@ -381,27 +381,9 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeTexture(descriptor: TextureDescriptor) -> Texture? {
-        let flags = {
-            return ((descriptor.textureType == .typeCube) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT.rawValue : 0)
-        }()
-        let extent = VkExtent3D(width: UInt32(descriptor.width),
-                                height: UInt32(descriptor.height),
-                                depth: UInt32(max(1, descriptor.depth)))
-        let imageType = descriptor.textureType.toVulkanImageType()
-        let format = descriptor.pixelFormat.toVulkanFormat()
-        let mipLevels = max(1, descriptor.mipmapLevelCount)
-        let arrayLayers = max(1, descriptor.arrayLength)
-        let image = self.device.createImage(flags: flags,
-                                            imageType: imageType,
-                                            format: format,
-                                            extent: extent,
-                                            mipLevels: mipLevels,
-                                            arrayLayers: arrayLayers,
-                                            usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
-                                            queueFamilies: [ self.queueFamily ])
-
         return VkMetalTexture(device: self,
-                              image: image)
+                              descriptor: descriptor,
+                              queueFamilies: [ self.queueFamily ])
     }
 
     func supportsFeatureSet(_ featureSet: FeatureSet) -> Bool {

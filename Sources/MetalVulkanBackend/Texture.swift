@@ -5,7 +5,9 @@ import MetalProtocols
 
 internal final class VkMetalTexture: VkMetalResource,
                                      Texture {
+    private let descriptor: TextureDescriptor
     private let image: VulkanImage
+    private var imageView: VulkanImageView? = nil
 
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
@@ -50,13 +52,39 @@ internal final class VkMetalTexture: VkMetalResource,
     }
 
     internal init(device: VkMetalDevice,
-                  image: VulkanImage) {
+                  descriptor: TextureDescriptor,
+                  queueFamilies: [Int]) {
+        let flags = {
+            return ((descriptor.textureType == .typeCube) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT.rawValue : 0)
+        }()
+        let extent = VkExtent3D(width: UInt32(descriptor.width),
+                                height: UInt32(descriptor.height),
+                                depth: UInt32(max(1, descriptor.depth)))
+        let imageType = descriptor.textureType.toVulkanImageType()
+        let format = descriptor.pixelFormat.toVulkanFormat()
+        let mipLevels = max(1, descriptor.mipmapLevelCount)
+        let arrayLayers = max(1, descriptor.arrayLength)
+        let _device = device.device
+        let image = _device.createImage(flags: flags,
+                                        imageType: imageType,
+                                        format: format,
+                                        extent: extent,
+                                        mipLevels: mipLevels,
+                                        arrayLayers: arrayLayers,
+                                        usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
+                                        queueFamilies: queueFamilies)
+
         self.image = image
+        self.descriptor = descriptor
         super.init(device: device)
     }
 
     internal func getImage() -> VulkanImage {
         return self.image
+    }
+
+    internal func getImageView() -> VulkanImageView? {
+        return self.imageView
     }
 
     public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,

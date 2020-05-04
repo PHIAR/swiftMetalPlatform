@@ -54,8 +54,9 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
     }
 
-    public override init(descriptorPool: VulkanDescriptorPool,
-                         commandBuffer: VkMetalCommandBuffer) {
+    public init(descriptorPool: VulkanDescriptorPool,
+                commandBuffer: VkMetalCommandBuffer,
+                descriptor: RenderPassDescriptor) {
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
     }

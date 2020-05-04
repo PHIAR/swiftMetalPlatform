@@ -202,7 +202,8 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     public func makeRenderCommandEncoder(descriptor: RenderPassDescriptor) -> RenderCommandEncoder? {
         return VkMetalRenderCommandEncoder(descriptorPool: self.descriptorPool,
-                                           commandBuffer: self)
+                                           commandBuffer: self,
+                                           descriptor: descriptor)
     }
 
     public func present(_ drawable: Drawable) {
