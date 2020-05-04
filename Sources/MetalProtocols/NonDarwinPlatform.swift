@@ -576,7 +576,7 @@ public class RenderPassColorAttachmentDescriptor: RenderPassAttachmentDescriptor
 }
 
 public class RenderPassColorAttachmentDescriptorArray {
-    private var attachments: [RenderPassColorAttachmentDescriptor] = []
+    public var attachments: [RenderPassColorAttachmentDescriptor] = []
 
     private func resizeAttachments(size: Int) {
         if size >= self.attachments.count {
@@ -643,7 +643,7 @@ public class RenderPipelineColorAttachmentDescriptor {
 }
 
 public class RenderPipelineColorAttachmentDescriptorArray {
-    private var attachments: [RenderPipelineColorAttachmentDescriptor] = []
+    public var attachments: [RenderPipelineColorAttachmentDescriptor] = []
 
     private func resizeAttachments(size: Int) {
         if size >= self.attachments.count {

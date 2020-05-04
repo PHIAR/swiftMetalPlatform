@@ -25,9 +25,11 @@ internal extension PrimitiveType {
 
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
+    private let descriptor: RenderPassDescriptor
     private var currentRenderState = DynamicRenderState()
     private var renderPipelineState: VkMetalRenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
+    private var isFramebufferBound = false
 
     internal func allocateDescriptorSets() {
         let renderPipelineState = self.renderPipelineState!
@@ -42,7 +44,46 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         ])
     }
 
+    private func bindFramebuffer() {
+        guard self.isFramebufferBound else {
+            return
+        }
+
+        let renderPipelineState = self.renderPipelineState!
+        let renderPass = renderPipelineState.getRenderPass()
+        let device = self._device.device
+        let attachments = self.descriptor.colorAttachments.attachments
+        let imageViews = attachments.map { ($0.texture as! VkMetalTexture).getImageView()! }
+        let width: Int
+        let height: Int
+
+        if let firstAttachment = attachments.first?.texture {
+            width = firstAttachment.width
+            height = firstAttachment.height
+        } else {
+            preconditionFailure()
+        }
+
+        let framebuffer = device.createFramebuffer(renderPass: renderPass,
+                                                   imageViews: imageViews,
+                                                   width: width,
+                                                   height: height)
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let renderArea = VkRect2D(offset: VkOffset2D(x: 0,
+                                                     y: 0),
+                                  extent: VkExtent2D(width: UInt32(width),
+                                                     height: UInt32(height)))
+
+        commandBuffer.beginRenderPass(renderPass: renderPass,
+                                      framebuffer: framebuffer,
+                                      renderArea: renderArea,
+                                      clearValues: [])
+        self.isFramebufferBound = true
+    }
+
     private func bindPipeline(primitiveType: PrimitiveType) {
+        self.bindFramebuffer()
+
         let renderPipelineState = self.renderPipelineState!
         let topology = primitiveType.toVulkanPrimitiveTopology()
         let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
@@ -51,12 +92,23 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
         commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
                                    pipeline: graphicsPipeline)
+    }
 
+    private func unbindFramebuffer() {
+        guard self.isFramebufferBound else {
+            return
+        }
+
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.endRenderPass()
+        super.endEncoding()
     }
 
     public init(descriptorPool: VulkanDescriptorPool,
                 commandBuffer: VkMetalCommandBuffer,
                 descriptor: RenderPassDescriptor) {
+        self.descriptor = descriptor
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
     }
@@ -441,9 +493,6 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     public override func endEncoding() {
-        let commandBuffer = self.commandBuffer.getCommandBuffer()
-
-        commandBuffer.endRenderPass()
-        super.endEncoding()
+        self.unbindFramebuffer()
     }
 }
