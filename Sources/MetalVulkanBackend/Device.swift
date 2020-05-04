@@ -18,6 +18,7 @@ internal func MetalCreateSystemDefaultDevice() -> Device? {
 internal extension PixelFormat {
     private static let formatMappings: [PixelFormat: VulkanFormat] = [
         .bgra8Unorm: .b8g8r8a8UNorm,
+        .rgba8Unorm: .r8g8b8a8UNorm,
     ]
 
     func toVulkanFormat() -> VulkanFormat {
