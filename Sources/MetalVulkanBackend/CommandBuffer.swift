@@ -3,6 +3,36 @@ import CoreFoundation
 import Dispatch
 import MetalProtocols
 
+internal extension LoadAction {
+    func toVkAttachmentLoadOp() -> VulkanAttachmentLoadOp {
+        switch self {
+        case .clear:
+            return .clear
+
+        case .dontCare:
+            return .dontCare
+
+        case .load:
+            return .load
+        }
+    }
+}
+
+internal extension StoreAction {
+    func toVkAttachmentStoreOp() -> VulkanAttachmentStoreOp {
+        switch self {
+        case .dontCare:
+            return .dontCare
+
+        case .store:
+            return .store
+
+        default:
+            preconditionFailure()
+        }
+    }
+}
+
 internal class VkMetalCommandBuffer: VkMetalObject,
                                      CommandBuffer {
     private enum State {
