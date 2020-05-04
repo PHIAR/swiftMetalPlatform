@@ -32,9 +32,19 @@ internal extension TextureType {
         .type3D: .type3D,
         .typeCube: .type2D,
     ]
+    private static let imageViewTypeMappings: [TextureType: VulkanImageViewType] = [
+        .type1D: .type1D,
+        .type2D: .type2D,
+        .type3D: .type3D,
+        .typeCube: .type2D,
+    ]
 
     func toVulkanImageType() -> VulkanImageType {
         return TextureType.imageTypeMappings[self]!
+    }
+
+    func toVulkanImageViewType() -> VulkanImageViewType {
+        return TextureType.imageViewTypeMappings[self]!
     }
 }
 

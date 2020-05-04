@@ -7,7 +7,7 @@ internal final class VkMetalTexture: VkMetalResource,
                                      Texture {
     private let descriptor: TextureDescriptor
     private let image: VulkanImage
-    private var imageView: VulkanImageView? = nil
+    private let imageView: VulkanImageView?
 
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
@@ -61,6 +61,7 @@ internal final class VkMetalTexture: VkMetalResource,
                                 height: UInt32(descriptor.height),
                                 depth: UInt32(max(1, descriptor.depth)))
         let imageType = descriptor.textureType.toVulkanImageType()
+        let viewType = descriptor.textureType.toVulkanImageViewType()
         let format = descriptor.pixelFormat.toVulkanFormat()
         let mipLevels = max(1, descriptor.mipmapLevelCount)
         let arrayLayers = max(1, descriptor.arrayLength)
@@ -73,9 +74,25 @@ internal final class VkMetalTexture: VkMetalResource,
                                         arrayLayers: arrayLayers,
                                         usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
                                         queueFamilies: queueFamilies)
+        var imageView: VulkanImageView? = nil
 
-        self.image = image
+        if descriptor.usage.contains(.renderTarget) {
+            let aspectMask = VK_IMAGE_ASPECT_COLOR_BIT.rawValue
+            let subresourceRange = VkImageSubresourceRange(aspectMask: aspectMask,
+                                                           baseMipLevel: 0,
+                                                           levelCount: UInt32(mipLevels),
+                                                           baseArrayLayer: 0,
+                                                           layerCount: UInt32(arrayLayers))
+
+            imageView = _device.createImageView(image: image,
+                                                viewType: viewType,
+                                                format: format,
+                                                subresourceRange: subresourceRange)
+        }
+
         self.descriptor = descriptor
+        self.image = image
+        self.imageView = imageView
         super.init(device: device)
     }
 
