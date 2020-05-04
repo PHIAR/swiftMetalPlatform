@@ -26,7 +26,6 @@ internal extension PrimitiveType {
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
     private var currentRenderState = DynamicRenderState()
-    private var renderPass: VulkanRenderPass
     private var renderPipelineState: VkMetalRenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
 
@@ -47,8 +46,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         let renderPipelineState = self.renderPipelineState!
         let topology = primitiveType.toVulkanPrimitiveTopology()
         let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
-                                                                       renderState: self.currentRenderState,
-                                                                       renderPass: self.renderPass)
+                                                                       renderState: self.currentRenderState)
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
         commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
@@ -56,10 +54,8 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
     }
 
-    public init(descriptorPool: VulkanDescriptorPool,
-                commandBuffer: VkMetalCommandBuffer,
-                renderPass: VulkanRenderPass) {
-        self.renderPass = renderPass
+    public override init(descriptorPool: VulkanDescriptorPool,
+                         commandBuffer: VkMetalCommandBuffer) {
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
     }
