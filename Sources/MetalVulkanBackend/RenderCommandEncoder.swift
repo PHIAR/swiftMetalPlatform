@@ -2,6 +2,18 @@ import swiftVulkan
 import vulkan
 import MetalProtocols
 
+internal extension IndexType {
+    func toVulkanIndexType() -> VulkanIndexType {
+        switch self {
+        case .uint16:
+            return .uInt16
+
+        case .uint32:
+            return .uInt32
+        }
+    }
+}
+
 internal extension PrimitiveType {
     func toVulkanPrimitiveTopology() -> VulkanPrimitiveTopology {
         switch self {
@@ -449,12 +461,16 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       baseVertex: Int,
                                       baseInstance: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let _indexBuffer = (indexBuffer as! VkMetalBuffer).getBuffer()
 
         self.bindPipeline(primitiveType: primitiveType)
+        commandBuffer.bindIndexBuffer(buffer: _indexBuffer,
+                                      offset: indexBufferOffset,
+                                      indexType: indexType.toVulkanIndexType())
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: instanceCount,
                                   firstIndex: baseVertex,
-                                  vertexOffset: indexBufferOffset,
+                                  vertexOffset: 0,
                                   firstInstance: baseInstance)
         self.allocateDescriptorSets()
     }
@@ -466,12 +482,16 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexBufferOffset: Int,
                                       instanceCount: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let _indexBuffer = (indexBuffer as! VkMetalBuffer).getBuffer()
 
         self.bindPipeline(primitiveType: primitiveType)
+        commandBuffer.bindIndexBuffer(buffer: _indexBuffer,
+                                      offset: indexBufferOffset,
+                                      indexType: indexType.toVulkanIndexType())
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: instanceCount,
                                   firstIndex: 0,
-                                  vertexOffset: indexBufferOffset,
+                                  vertexOffset: 0,
                                   firstInstance: 0)
         self.allocateDescriptorSets()
     }
@@ -482,12 +502,16 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       indexBuffer: Buffer,
                                       indexBufferOffset: Int) {
         let commandBuffer = self.commandBuffer.getCommandBuffer()
+        let _indexBuffer = (indexBuffer as! VkMetalBuffer).getBuffer()
 
         self.bindPipeline(primitiveType: primitiveType)
+        commandBuffer.bindIndexBuffer(buffer: _indexBuffer,
+                                      offset: indexBufferOffset,
+                                      indexType: indexType.toVulkanIndexType())
         commandBuffer.drawIndexed(indexCount: indexCount,
                                   instanceCount: 1,
                                   firstIndex: 0,
-                                  vertexOffset: indexBufferOffset,
+                                  vertexOffset: 0,
                                   firstInstance: 0)
         self.allocateDescriptorSets()
     }
