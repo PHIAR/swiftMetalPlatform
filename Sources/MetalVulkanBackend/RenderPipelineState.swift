@@ -282,7 +282,6 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
     private var specializedPipelines: [DynamicRenderState: VulkanPipeline] = [:]
     private let vertexInputState: VulkanPipelineVertexInputState
     private let viewportState: VulkanPipelineViewportState
-    private let renderPass: VulkanRenderPass
 
     private var isAlphaToCoverageEnabled = false
     private var isAlphaToOneEnabled = false
@@ -318,9 +317,6 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                               bindings: bindings)
         let viewportState = VulkanPipelineViewportState(viewports: [],
                                                         scissors: [])
-        let renderPass = device.createRenderPass(attachments: [],
-                                                 subpasses: [],
-                                                 dependencies: [])
 
         self.device = device
         self.vertexFunction = vertexFunction
@@ -328,7 +324,6 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
         self.pipelineLayout = pipelineLayout
         self.vertexInputState = vertexInputState
         self.viewportState = viewportState
-        self.renderPass = renderPass
         self.isAlphaToCoverageEnabled = descriptor.isAlphaToCoverageEnabled
         self.isAlphaToOneEnabled = descriptor.isAlphaToOneEnabled
     }
@@ -338,6 +333,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
     }
 
     internal func getGraphicsPipeline(topology: VulkanPrimitiveTopology,
+                                      renderPass: VulkanRenderPass,
                                       renderState: DynamicRenderState) -> VulkanPipeline {
         if let graphicsPipeline = self.specializedPipelines[renderState] {
             return graphicsPipeline
@@ -375,7 +371,7 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                              colorBlendState: colorBlendState,
                                                              dynamicStates: VkMetalRenderPipelineState.dynamicStates,
                                                              pipelineLayout: pipelineLayout,
-                                                             renderPass: self.renderPass)
+                                                             renderPass: renderPass)
 
         self.specializedPipelines[renderState] = graphicsPipeline
         return graphicsPipeline
@@ -383,10 +379,6 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
 
     internal func getPipelineLayout() -> VulkanPipelineLayout {
         return self.pipelineLayout
-    }
-
-    internal func getRenderPass() -> VulkanRenderPass {
-        return self.renderPass
     }
 
     internal func getVertexFunction() -> VkMetalFunction {

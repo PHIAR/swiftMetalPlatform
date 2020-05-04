@@ -4,7 +4,7 @@ import Dispatch
 import MetalProtocols
 
 internal extension LoadAction {
-    func toVkAttachmentLoadOp() -> VulkanAttachmentLoadOp {
+    func toVulkanAttachmentLoadOp() -> VulkanAttachmentLoadOp {
         switch self {
         case .clear:
             return .clear
@@ -19,7 +19,7 @@ internal extension LoadAction {
 }
 
 internal extension StoreAction {
-    func toVkAttachmentStoreOp() -> VulkanAttachmentStoreOp {
+    func toVulkanAttachmentStoreOp() -> VulkanAttachmentStoreOp {
         switch self {
         case .dontCare:
             return .dontCare

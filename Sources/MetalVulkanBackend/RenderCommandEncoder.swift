@@ -56,20 +56,59 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         ])
     }
 
-    private func bindFramebuffer() {
+    private func bindPipeline(primitiveType: PrimitiveType) {
         guard self.isFramebufferBound else {
             return
         }
 
         let renderPipelineState = self.renderPipelineState!
-        let renderPass = renderPipelineState.getRenderPass()
         let device = self._device.device
-        let attachments = self.descriptor.colorAttachments.attachments
-        let imageViews = attachments.map { ($0.texture as! VkMetalTexture).getImageView()! }
+        let colorAttachments = self.descriptor.colorAttachments.attachments
+        let attachments: [VkAttachmentDescription] = colorAttachments.map { colorAttachment in
+            let texture  = colorAttachment.texture as! VkMetalTexture
+            let format = texture.pixelFormat.toVulkanFormat().toVkFormat()
+            let loadOp = colorAttachment.loadAction.toVulkanAttachmentLoadOp().toVkAttachmentLoadOp()
+            let storeOp = colorAttachment.storeAction.toVulkanAttachmentStoreOp().toVkAttachmentStoreOp()
+            let stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+            let stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+            let attachment = VkAttachmentDescription(flags: 0,
+                                                     format: format,
+                                                     samples: VK_SAMPLE_COUNT_1_BIT,
+                                                     loadOp: loadOp,
+                                                     storeOp: storeOp,
+                                                     stencilLoadOp: stencilLoadOp,
+                                                     stencilStoreOp: stencilStoreOp,
+                                                     initialLayout: VK_IMAGE_LAYOUT_UNDEFINED,
+                                                     finalLayout: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+
+            return attachment
+        }
+        let subpass = VkSubpassDescription(flags: 0,
+                                           pipelineBindPoint: VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                           inputAttachmentCount: 0,
+                                           pInputAttachments: nil,
+                                           colorAttachmentCount: 1,
+                                           pColorAttachments: nil,
+                                           pResolveAttachments: nil,
+                                           pDepthStencilAttachment: nil,
+                                           preserveAttachmentCount: 0,
+                                           pPreserveAttachments: nil)
+        let dependency = VkSubpassDependency(srcSubpass: VK_SUBPASS_EXTERNAL,
+                                             dstSubpass: 0,
+                                             srcStageMask: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue,
+                                             dstStageMask: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue,
+                                             srcAccessMask: 0,
+                                             dstAccessMask: VK_ACCESS_COLOR_ATTACHMENT_READ_BIT.rawValue |
+                                                            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT.rawValue,
+                                             dependencyFlags: 0)
+        let renderPass = device.createRenderPass(attachments: attachments,
+                                                 subpasses: [ subpass ],
+                                                 dependencies: [ dependency ])
+        let imageViews = colorAttachments.map { ($0.texture as! VkMetalTexture).getImageView()! }
         let width: Int
         let height: Int
 
-        if let firstAttachment = attachments.first?.texture {
+        if let firstAttachment = colorAttachments.first?.texture {
             width = firstAttachment.width
             height = firstAttachment.height
         } else {
@@ -91,16 +130,11 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                       renderArea: renderArea,
                                       clearValues: [])
         self.isFramebufferBound = true
-    }
 
-    private func bindPipeline(primitiveType: PrimitiveType) {
-        self.bindFramebuffer()
-
-        let renderPipelineState = self.renderPipelineState!
         let topology = primitiveType.toVulkanPrimitiveTopology()
         let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
+                                                                       renderPass: renderPass,
                                                                        renderState: self.currentRenderState)
-        let commandBuffer = self.commandBuffer.getCommandBuffer()
 
         commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
                                    pipeline: graphicsPipeline)
