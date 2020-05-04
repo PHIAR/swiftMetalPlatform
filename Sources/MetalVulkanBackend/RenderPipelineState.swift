@@ -283,15 +283,22 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
     private let vertexInputState: VulkanPipelineVertexInputState
     private let viewportState: VulkanPipelineViewportState
 
+    private var isAlphaToCoverageEnabled = false
+    private var isAlphaToOneEnabled = false
+
     public static func == (lhs: VkMetalRenderPipelineState,
                            rhs: VkMetalRenderPipelineState) -> Bool {
         return false
     }
 
     internal init(device: VulkanDevice,
-                  vertexDescriptor: VertexDescriptor?,
-                  vertexFunction: VkMetalFunction,
-                  fragmentFunction: VkMetalFunction) {
+                  descriptor: RenderPipelineDescriptor) {
+        guard let vertexFunction = descriptor.vertexFunction as? VkMetalFunction,
+              let fragmentFunction = descriptor.fragmentFunction as? VkMetalFunction else {
+            preconditionFailure()
+        }
+
+        let vertexDescriptor = descriptor.vertexDescriptor
         let vertexDescriptorSetLayout = vertexFunction.getDescriptorSetLayout()
         let fragmentDescriptorSetLayout = fragmentFunction.getDescriptorSetLayout()
         let descriptorSetLayouts = [
@@ -317,6 +324,8 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
         self.pipelineLayout = pipelineLayout
         self.vertexInputState = vertexInputState
         self.viewportState = viewportState
+        self.isAlphaToCoverageEnabled = descriptor.isAlphaToCoverageEnabled
+        self.isAlphaToOneEnabled = descriptor.isAlphaToOneEnabled
     }
 
     internal func getFragmentFunction() -> VkMetalFunction {
@@ -348,8 +357,8 @@ internal final class VkMetalRenderPipelineState: RenderPipelineState,
                                                               sampleShadingEnable: false,
                                                               minSampleShading: 0,
                                                               sampleMask: [],
-                                                              alphaToCoverageEnable: false,
-                                                              alphaToOneEnable: false)
+                                                              alphaToCoverageEnable: self.isAlphaToCoverageEnabled,
+                                                              alphaToOneEnable: self.isAlphaToOneEnabled)
         let colorBlendState = VulkanPipelineColorBlendState(logicOpEnable: false,
                                                             attachments: [])
         let pipelineLayout = self.getPipelineLayout()
