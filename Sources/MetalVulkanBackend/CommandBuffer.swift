@@ -66,7 +66,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
                   index: Int,
                   retained: Bool = true) {
         let device = commandQueue._device
-        let _device = device.device
+        let _device = device.getDevice()
         let fence = _device.createFence()
 
         self._commandQueue = commandQueue
@@ -96,7 +96,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
     internal func beginCommandBuffer() {
         self.executionQueue.sync {
-            let device = self._device.device
+            let device = self._device.getDevice()
 
             device.resetFences(fences: [ fence ])
 

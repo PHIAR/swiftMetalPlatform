@@ -62,7 +62,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
             commandBuffer.setScheduled()
 
             self.commandQueue.async {
-                let device = self._device.device
+                let device = self._device.getDevice()
 
                 device.waitForFences(fences: [ fence ])
                 commandBuffer.setCompleted()
@@ -76,7 +76,7 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     public func makeCommandBuffer() -> CommandBuffer? {
         return self.executionQueue.sync {
             if self.commandBuffers.isEmpty {
-                let device = self._device.device
+                let device = self._device.getDevice()
                 let fence = device.createFence()
 
                 device.resetFences(fences: [ fence ])

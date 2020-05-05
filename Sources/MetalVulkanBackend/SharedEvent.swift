@@ -27,7 +27,7 @@ internal final class VkMetalSharedEvent: VkMetalObject,
 
     internal func issueListeners() {
         self.executionQueue.async {
-            self.listeners.forEach { $0.issue(device: self._device.device,
+            self.listeners.forEach { $0.issue(device: self._device.getDevice(),
                                               sharedEvent: self) }
             self.listeners.removeAll()
         }
@@ -50,7 +50,7 @@ internal final class VkMetalSharedEvent: VkMetalObject,
                        block: @escaping SharedEvent.NotificationBlock) {
         self.executionQueue.sync {
             let _listener = listener as! VkMetalSharedEventListener
-            let _device = self._device.device
+            let _device = self._device.getDevice()
             let event = _device.createEvent()
 
             _listener.addEvent(event: event,

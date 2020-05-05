@@ -310,6 +310,8 @@ public protocol Drawable {
 }
 
 public protocol Layer {
+    func getDevice() -> Device
+    func setDrawableSize(size: Size)
 }
 
 public struct ColorWriteMask: OptionSet {

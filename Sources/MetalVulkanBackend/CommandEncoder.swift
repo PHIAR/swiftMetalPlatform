@@ -16,7 +16,7 @@ internal class VkMetalCommandEncoder: VkMetalObject,
     }
 
     internal func allocateDescriptorSets(descriptorSetLayouts: [VulkanDescriptorSetLayout]) {
-        let device = self._device.device
+        let device = self._device.getDevice()
         let descriptorSets = device.allocateDescriptorSets(descriptorPool: self.descriptorPool,
                                                            setLayouts: descriptorSetLayouts)
 

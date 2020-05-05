@@ -65,7 +65,7 @@ internal final class VkMetalTexture: VkMetalResource,
         let format = descriptor.pixelFormat.toVulkanFormat()
         let mipLevels = max(1, descriptor.mipmapLevelCount)
         let arrayLayers = max(1, descriptor.arrayLength)
-        let _device = device.device
+        let _device = device.getDevice()
         let image = _device.createImage(flags: flags,
                                         imageType: imageType,
                                         format: format,

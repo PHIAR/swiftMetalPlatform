@@ -30,8 +30,7 @@ open class VisualLayer: Layer {
 
     public init(nativeWindowHandle: OpaquePointer) {
         let device = MetalCreateSystemDefaultDevice() as! VkMetalDevice
-        let _device = device.device
-        let physicalDevice = _device.getPhysicalDevice()
+        let physicalDevice = device.getPhysicalDevice()
         let instance = physicalDevice.getInstance()
         let surface: VulkanSurface
 
@@ -47,11 +46,8 @@ open class VisualLayer: Layer {
         preconditionFailure()
     #endif
 
-        let queueFamilyIndex = VisualLayer.getQueueFamilyIndex(physicalDevice: physicalDevice,
-                                                               surface: surface,
-                                                               flags: VkQueueFlags(VK_QUEUE_GRAPHICS_BIT.rawValue))
-        let layer = VulkanVisualLayer(device: _device,
-                                      queueFamilyIndex: queueFamilyIndex,
+        let layer = VulkanVisualLayer(device: device.getDevice(),
+                                      queueFamilyIndex: device.getQueueFamilyIndex(),
                                       queueIndex: 0,
                                       surface: surface)
 
@@ -61,6 +57,9 @@ open class VisualLayer: Layer {
 
     public func getDevice() -> Device {
         return self.device
+    }
+
+    public func setDrawableSize(size: Size) {
     }
 }
 

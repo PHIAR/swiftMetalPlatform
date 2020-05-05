@@ -62,7 +62,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         }
 
         let renderPipelineState = self.renderPipelineState!
-        let device = self._device.device
+        let device = self._device.getDevice()
         let colorAttachments = self.descriptor.colorAttachments.attachments
         let attachments: [VkAttachmentDescription] = colorAttachments.map { colorAttachment in
             let texture  = colorAttachment.texture as! VkMetalTexture

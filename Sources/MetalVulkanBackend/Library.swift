@@ -39,7 +39,7 @@ internal final class VkMetalLibrary: Library {
             preconditionFailure()
         }
 
-        return VkMetalFunction(device: self.device.device,
+        return VkMetalFunction(device: self.device.getDevice(),
                                spirv: spirv,
                                name: name,
                                functionArgumentTypes: functionArgumentTypes)
@@ -52,7 +52,7 @@ internal final class VkMetalLibrary: Library {
             preconditionFailure()
         }
 
-        return VkMetalFunction(device: self.device.device,
+        return VkMetalFunction(device: self.device.getDevice(),
                                spirv: spirv,
                                name: name,
                                functionArgumentTypes: functionArgumentTypes,

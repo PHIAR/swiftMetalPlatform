@@ -68,10 +68,10 @@ internal final class VkMetalDevice: Device {
     private let deviceMemBaseAddrAlign: Int
     private let deviceQueue: VulkanQueue
     private let descriptorPool: VulkanDescriptorPool
+    private let physicalDevice: VulkanPhysicalDevice
+    private let device: VulkanDevice
+    private let queueFamilyIndex: Int
 
-    internal let physicalDevice: VulkanPhysicalDevice
-    internal let device: VulkanDevice
-    internal let queueFamily: Int
     internal let sharedMemoryTypeIndex: Int
     internal let privateMemoryTypeIndex: Int
 
@@ -133,19 +133,19 @@ internal final class VkMetalDevice: Device {
 
         precondition(!queueFamilyProperties.isEmpty)
 
-        var queueFamily = -1
+        var queueFamilyIndex = -1
 
-        for _queueFamily in 0..<queueFamilyProperties.count {
-            guard (queueFamilyProperties[_queueFamily].queueFlags & (VK_QUEUE_GRAPHICS_BIT.rawValue |
-                                                                     VK_QUEUE_GRAPHICS_BIT.rawValue)) != 0 else {
+        for _queueFamilyIndex in 0..<queueFamilyProperties.count {
+            guard (queueFamilyProperties[_queueFamilyIndex].queueFlags & (VK_QUEUE_GRAPHICS_BIT.rawValue |
+                                                                          VK_QUEUE_GRAPHICS_BIT.rawValue)) != 0 else {
                 continue
             }
 
-            queueFamily = _queueFamily
+            queueFamilyIndex = _queueFamilyIndex
             break
         }
 
-        precondition(queueFamily != -1)
+        precondition(queueFamilyIndex != -1)
 
         var features = VkPhysicalDeviceFeatures()
 
@@ -164,7 +164,7 @@ internal final class VkMetalDevice: Device {
         ]
     #endif
 
-        let device = physicalDevice.createDevice(queues: [ queueFamily ],
+        let device = physicalDevice.createDevice(queues: [ queueFamilyIndex ],
                                                  layerNames: [],
                                                  extensions: extensions,
                                                  features: features)
@@ -205,10 +205,10 @@ internal final class VkMetalDevice: Device {
 
         self.physicalDevice = physicalDevice
         self.device = device
-        self.queueFamily = queueFamily
+        self.queueFamilyIndex = queueFamilyIndex
         self.privateMemoryTypeIndex = privateMemoryTypeIndex
         self.sharedMemoryTypeIndex = sharedMemoryTypeIndex
-        self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamily,
+        self.deviceQueue = device.getDeviceQueue(queueFamily: queueFamilyIndex,
                                                  queue: 0)
         self.descriptorPool = descriptorPool
     }
@@ -219,6 +219,18 @@ internal final class VkMetalDevice: Device {
                             deallocator: (() -> Void)?) -> Buffer? {
         return VkMetalBuffer(device: self,
                              length: length)
+    }
+
+    internal func getDevice() -> VulkanDevice {
+        return self.device
+    }
+
+    internal func getPhysicalDevice() -> VulkanPhysicalDevice {
+        return self.physicalDevice
+    }
+
+    internal func getQueueFamilyIndex() -> Int {
+        return self.queueFamilyIndex
     }
 
     public func makeBuffer(length: Int,
@@ -256,7 +268,7 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeCommandQueue(maxCommandBufferCount: Int) -> CommandQueue? {
-        let commandPool = self.device.createCommandPool(queue: self.queueFamily)
+        let commandPool = self.device.createCommandPool(queue: self.queueFamilyIndex)
 
         return VkMetalCommandQueue(device: self,
                                    deviceQueue: self.deviceQueue,
@@ -394,10 +406,10 @@ internal final class VkMetalDevice: Device {
     public func makeTexture(descriptor: TextureDescriptor) -> Texture? {
         return VkMetalTexture(device: self,
                               descriptor: descriptor,
-                              queueFamilies: [ self.queueFamily ])
+                              queueFamilies: [ self.queueFamilyIndex ])
     }
 
-    func supportsFeatureSet(_ featureSet: FeatureSet) -> Bool {
+    public func supportsFeatureSet(_ featureSet: FeatureSet) -> Bool {
         return true
     }
 }
