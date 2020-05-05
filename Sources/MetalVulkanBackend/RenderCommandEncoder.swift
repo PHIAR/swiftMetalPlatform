@@ -64,6 +64,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         let renderPipelineState = self.renderPipelineState!
         let device = self._device.getDevice()
         let colorAttachments = self.descriptor.colorAttachments.attachments
+        var clearValues: [VkClearValue] = []
         let attachments: [VkAttachmentDescription] = colorAttachments.map { colorAttachment in
             let texture  = colorAttachment.texture as! VkMetalTexture
             let format = texture.pixelFormat.toVulkanFormat().toVkFormat()
@@ -80,6 +81,17 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                      stencilStoreOp: stencilStoreOp,
                                                      initialLayout: VK_IMAGE_LAYOUT_UNDEFINED,
                                                      finalLayout: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+
+            if colorAttachment.loadAction == .clear {
+                let clearColor = colorAttachment.clearColor
+
+                clearValues.append(VkClearValue(color: VkClearColorValue(float32: (clearColor.red,
+                                                                                   clearColor.green,
+                                                                                   clearColor.blue,
+                                                                                   clearColor.alpha))))
+            } else {
+                clearValues.append(VkClearValue())
+            }
 
             return attachment
         }
@@ -128,7 +140,7 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         commandBuffer.beginRenderPass(renderPass: renderPass,
                                       framebuffer: framebuffer,
                                       renderArea: renderArea,
-                                      clearValues: [])
+                                      clearValues: clearValues)
         self.isFramebufferBound = true
 
         let topology = primitiveType.toVulkanPrimitiveTopology()

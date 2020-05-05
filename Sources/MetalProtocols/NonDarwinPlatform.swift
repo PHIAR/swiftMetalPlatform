@@ -318,6 +318,13 @@ public protocol Layer {
     func nextDrawable() -> Drawable?
 }
 
+public struct ClearColor {
+    public var red = Float(0.0)
+    public var green = Float(0.0)
+    public var blue = Float(0.0)
+    public var alpha = Float(0.0)
+}
+
 public struct ColorWriteMask: OptionSet {
     public static let all = ColorWriteMask([ .red, .blue, .green, .alpha ])
     public static let none = ColorWriteMask([])
@@ -579,6 +586,10 @@ public class RenderPassAttachmentDescriptor {
 }
 
 public class RenderPassColorAttachmentDescriptor: RenderPassAttachmentDescriptor {
+    public var clearColor = ClearColor(red: 0.0,
+                                       green: 0.0,
+                                       blue: 0.0,
+                                       alpha: 1.0)
 }
 
 public class RenderPassColorAttachmentDescriptorArray {

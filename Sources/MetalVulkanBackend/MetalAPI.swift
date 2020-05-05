@@ -19,6 +19,7 @@ public typealias MTLBuffer = Buffer
 public typealias MTLCaptureDescriptor = CaptureDescriptor
 public typealias MTLCaptureManager = CaptureManager
 public typealias MTLCaptureScope = CaptureScope
+public typealias MTLClearColor = ClearColor
 public typealias MTLColorWriteMask = ColorWriteMask
 public typealias MTLCommandBuffer = CommandBuffer
 public typealias MTLCommandEncoder = CommandEncoder
