@@ -310,8 +310,12 @@ public protocol Drawable {
 }
 
 public protocol Layer {
-    func getDevice() -> Device
-    func setDrawableSize(size: Size)
+    var device: Device { get set }
+    var drawableSize: Size { get set }
+    var maximumDrawableCount: Int { get set }
+    var pixelFormat: PixelFormat { get set }
+
+    func nextDrawable() -> Drawable?
 }
 
 public struct ColorWriteMask: OptionSet {

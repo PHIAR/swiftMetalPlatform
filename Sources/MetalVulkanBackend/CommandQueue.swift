@@ -50,15 +50,21 @@ internal final class VkMetalCommandQueue: VkMetalObject,
     deinit {
     }
 
-    internal func commit(commandBuffer: VkMetalCommandBuffer) {
+    internal func commit(commandBuffer: VkMetalCommandBuffer,
+                         presentationVisual: Visual?) {
         self.executionQueue.async {
             let fence = commandBuffer.getFence()
 
-            self.deviceQueue.submit(waitSemaphores: [],
-                                    waitDstStageMask: [],
-                                    commandBuffers: [ commandBuffer.getCommandBuffer() ],
-                                    signalSemaphores: [],
-                                    fence: fence)
+            if let _presentationVisual = presentationVisual {
+                _presentationVisual.present(commandBuffer: commandBuffer)
+            } else {
+                self.deviceQueue.submit(waitSemaphores: [],
+                                        waitDstStageMask: [],
+                                        commandBuffers: [ commandBuffer.getCommandBuffer() ],
+                                        signalSemaphores: [],
+                                        fence: fence)
+            }
+
             commandBuffer.setScheduled()
 
             self.commandQueue.async {

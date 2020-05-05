@@ -47,6 +47,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     private let fence: VulkanFence
     private let index: Int
     private let retained: Bool
+    private var presentationVisual: Visual? = nil
     private var state = State.recording
     private let executionQueue = DispatchQueue(label: "VkMetalCommandBuffer.executionQueue")
     private let scheduledGroup = DispatchGroup()
@@ -99,7 +100,6 @@ internal class VkMetalCommandBuffer: VkMetalObject,
             let device = self._device.getDevice()
 
             device.resetFences(fences: [ fence ])
-
             self.commandBuffer.begin()
             self.scheduledGroup.enter()
             self.completionGroup.enter()
@@ -108,6 +108,7 @@ internal class VkMetalCommandBuffer: VkMetalObject,
                 self.descriptorSets.removeAll()
                 self.trackedEvents.removeAll()
                 self.trackedResources.removeAll()
+                self.presentationVisual = nil
             }
         }
     }
@@ -163,7 +164,8 @@ internal class VkMetalCommandBuffer: VkMetalObject,
 
         self.executionQueue.sync {
             self.commandBuffer.end()
-            self._commandQueue.commit(commandBuffer: self)
+            self._commandQueue.commit(commandBuffer: self,
+                                      presentationVisual: self.presentationVisual)
         }
     }
 
@@ -207,14 +209,32 @@ internal class VkMetalCommandBuffer: VkMetalObject,
     }
 
     public func present(_ drawable: Drawable) {
+        self.executionQueue.sync {
+            let visual = drawable as! Visual
+
+            visual.enqueuePresentBarrier(commandBuffer: self)
+            self.presentationVisual = visual
+        }
     }
 
     public func present(_ drawable: Drawable,
                         afterMinimumDuration: CFTimeInterval) {
+        self.executionQueue.sync {
+            let visual = drawable as! Visual
+
+            visual.enqueuePresentBarrier(commandBuffer: self)
+            self.presentationVisual = visual
+        }
     }
 
     public func present(_ drawable: Drawable,
                         atTime: CFTimeInterval) {
+        self.executionQueue.sync {
+            let visual = drawable as! Visual
+
+            visual.enqueuePresentBarrier(commandBuffer: self)
+            self.presentationVisual = visual
+        }
     }
 
     public func waitUntilCompleted() {

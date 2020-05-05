@@ -225,6 +225,10 @@ internal final class VkMetalDevice: Device {
         return self.device
     }
 
+    internal func getDeviceQueue() -> VulkanQueue {
+        return self.deviceQueue
+    }
+
     internal func getPhysicalDevice() -> VulkanPhysicalDevice {
         return self.physicalDevice
     }
