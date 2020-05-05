@@ -6,6 +6,7 @@ import MetalProtocols
 internal final class VkMetalTexture: VkMetalResource,
                                      Texture {
     private let image: VulkanImage
+    private let deviceMemory: VulkanDeviceMemory?
     private let imageView: VulkanImageView?
     private let size: Size
     private let _mipmapLevelCount: Int
@@ -48,29 +49,19 @@ internal final class VkMetalTexture: VkMetalResource,
         return self._arrayLength
     }
 
+
     internal init(device: VkMetalDevice,
                   descriptor: TextureDescriptor,
-                  queueFamilies: [Int]) {
-        let flags = {
-            return ((descriptor.textureType == .typeCube) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT.rawValue : 0)
-        }()
+                  image: VulkanImage,
+                  deviceMemory: VulkanDeviceMemory? = nil) {
         let extent = VkExtent3D(width: UInt32(descriptor.width),
                                 height: UInt32(descriptor.height),
                                 depth: UInt32(max(1, descriptor.depth)))
-        let imageType = descriptor.textureType.toVulkanImageType()
         let viewType = descriptor.textureType.toVulkanImageViewType()
         let format = descriptor.pixelFormat.toVulkanFormat()
         let mipLevels = max(1, descriptor.mipmapLevelCount)
         let arrayLayers = max(1, descriptor.arrayLength)
         let _device = device.getDevice()
-        let image = _device.createImage(flags: flags,
-                                        imageType: imageType,
-                                        format: format,
-                                        extent: extent,
-                                        mipLevels: mipLevels,
-                                        arrayLayers: arrayLayers,
-                                        usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
-                                        queueFamilies: queueFamilies)
         var imageView: VulkanImageView? = nil
 
         if descriptor.usage.contains(.renderTarget) {
@@ -88,6 +79,7 @@ internal final class VkMetalTexture: VkMetalResource,
         }
 
         self.image = image
+        self.deviceMemory = deviceMemory
         self.imageView = imageView
         self.size = Size(width: Int(extent.width),
                          height: Int(extent.height),
@@ -96,6 +88,39 @@ internal final class VkMetalTexture: VkMetalResource,
         self._sampleCount = 1
         self._arrayLength = arrayLayers
         super.init(device: device)
+    }
+
+    internal convenience init(device: VkMetalDevice,
+                              descriptor: TextureDescriptor,
+                              queueFamilies: [Int]) {
+        let flags = {
+            return ((descriptor.textureType == .typeCube) ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT.rawValue : 0)
+        }()
+        let extent = VkExtent3D(width: UInt32(descriptor.width),
+                                height: UInt32(descriptor.height),
+                                depth: UInt32(max(1, descriptor.depth)))
+        let imageType = descriptor.textureType.toVulkanImageType()
+        let format = descriptor.pixelFormat.toVulkanFormat()
+        let mipLevels = max(1, descriptor.mipmapLevelCount)
+        let arrayLayers = max(1, descriptor.arrayLength)
+        let _device = device.getDevice()
+        let image = _device.createImage(flags: flags,
+                                        imageType: imageType,
+                                        format: format,
+                                        extent: extent,
+                                        mipLevels: mipLevels,
+                                        arrayLayers: arrayLayers,
+                                        usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
+                                        queueFamilies: queueFamilies)
+        let imageMemoryRequirements = image.getImageMemoryRequirements()
+        let deviceMemory = _device.allocateMemory(size: Int(imageMemoryRequirements.size),
+                                                  memoryTypeIndex: 0)
+
+        image.bindImageMemory(deviceMemory: deviceMemory,
+                              offset: 0)
+        self.init(device: device,
+                  descriptor: descriptor,
+                  image: image)
     }
 
     internal func getImage() -> VulkanImage {

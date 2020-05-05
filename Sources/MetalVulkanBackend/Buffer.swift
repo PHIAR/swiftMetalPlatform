@@ -26,13 +26,14 @@ internal final class VkMetalBuffer: VkMetalResource,
     internal init(device: VkMetalDevice,
                   length: Int) {
         let _device = device.getDevice()
-        let deviceMemory = _device.allocateMemory(size: length,
-                                                  memoryTypeIndex: 0)
         let buffer = _device.createBuffer(size: length,
                                           usage: VK_BUFFER_USAGE_STORAGE_BUFFER_BIT.rawValue |
                                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT.rawValue |
                                                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT.rawValue,
                                           queueFamilies: [ device.sharedMemoryTypeIndex ])
+        let bufferMemoryRequirements = buffer.getBufferMemoryRequirements()
+        let deviceMemory = _device.allocateMemory(size: Int(bufferMemoryRequirements.size),
+                                                  memoryTypeIndex: 0)
 
         buffer.bindBufferMemory(deviceMemory: deviceMemory,
                                 offset: 0)
