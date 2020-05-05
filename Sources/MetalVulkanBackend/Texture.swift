@@ -5,9 +5,12 @@ import MetalProtocols
 
 internal final class VkMetalTexture: VkMetalResource,
                                      Texture {
-    private let descriptor: TextureDescriptor
     private let image: VulkanImage
     private let imageView: VulkanImageView?
+    private let size: Size
+    private let _mipmapLevelCount: Int
+    private let _sampleCount: Int
+    private let _arrayLength: Int
 
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
@@ -22,33 +25,27 @@ internal final class VkMetalTexture: VkMetalResource,
     }
 
     public var width: Int {
-        let _width = 0
-
-        return _width
+        return self.size.width
     }
 
     public var height: Int {
-        let _height = 0
-
-        return _height
+        return self.size.height
     }
 
     public var depth: Int {
-        let _depth = 0
-
-        return min(1, _depth)
+        return self.size.depth
     }
 
     public var mipmapLevelCount: Int {
-        return 1
+        return self._mipmapLevelCount
     }
 
     public var sampleCount: Int {
-        return 1
+        return self._sampleCount
     }
 
     public var arrayLength: Int {
-        return 1
+        return self._arrayLength
     }
 
     internal init(device: VkMetalDevice,
@@ -90,9 +87,14 @@ internal final class VkMetalTexture: VkMetalResource,
                                                 subresourceRange: subresourceRange)
         }
 
-        self.descriptor = descriptor
         self.image = image
         self.imageView = imageView
+        self.size = Size(width: Int(extent.width),
+                         height: Int(extent.height),
+                         depth: Int(extent.depth))
+        self._mipmapLevelCount = mipLevels
+        self._sampleCount = 1
+        self._arrayLength = arrayLayers
         super.init(device: device)
     }
 
