@@ -4,6 +4,8 @@ public enum LibraryError: Error {
 }
 
 public protocol Library {
+    var device: Device { get }
+
     func makeFunction(name: String) -> Function?
 
     func makeFunction(name: String,

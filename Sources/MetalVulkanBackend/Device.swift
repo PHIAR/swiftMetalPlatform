@@ -295,7 +295,7 @@ internal final class VkMetalDevice: Device {
     public func makeComputePipelineState(function: Function) throws -> ComputePipelineState {
         let _function = function as! VkMetalFunction
 
-        guard let computePipelineState = VkMetalComputePipelineState(device: self.device,
+        guard let computePipelineState = VkMetalComputePipelineState(device: self,
                                                                      function: _function) else {
             throw ComputePipelineStateError.failed
         }

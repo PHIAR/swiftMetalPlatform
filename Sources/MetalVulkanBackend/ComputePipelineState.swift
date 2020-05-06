@@ -4,11 +4,15 @@ import Dispatch
 import MetalProtocols
 
 internal final class VkMetalComputePipelineState: ComputePipelineState {
-    private let device: VulkanDevice
+    private let _device: VkMetalDevice
     private let function: VkMetalFunction
     private let pipelineLayout: VulkanPipelineLayout
     private let executionQueue = DispatchQueue(label: "VkMetalComputePipelineState.executionQueue")
     private var specializedPipelines: [Size: VulkanPipeline] = [:]
+
+    public var device: Device {
+        return self._device
+    }
 
     public var maxTotalThreadsPerThreadgroup: Int {
         let workGroupSize = 1024
@@ -26,14 +30,15 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
         return self.maxTotalThreadsPerThreadgroup
     }
 
-    internal init?(device: VulkanDevice,
+    internal init?(device: VkMetalDevice,
                    function: VkMetalFunction) {
+        let _device = device.getDevice()
         let descriptorSetLayout = function.getDescriptorSetLayout()
         let pushConstantRange = function.getPushConstantRange()
-        let pipelineLayout = device.createPipelineLayout(descriptorSetLayouts: [ descriptorSetLayout ],
-                                                         pushConstantRanges: (pushConstantRange.size == 0) ? [] : [ pushConstantRange ])
+        let pipelineLayout = _device.createPipelineLayout(descriptorSetLayouts: [ descriptorSetLayout ],
+                                                          pushConstantRanges: (pushConstantRange.size == 0) ? [] : [ pushConstantRange ])
 
-        self.device = device
+        self._device = device
         self.function = function
         self.pipelineLayout = pipelineLayout
     }
@@ -54,7 +59,7 @@ internal final class VkMetalComputePipelineState: ComputePipelineState {
             ]
 
             guard let pipeline = self.specializedPipelines[_workgroupSize] else {
-                let device = self.device
+                let device = self._device.getDevice()
                 let function = self.function
                 let shaderModule = function.getShaderModule()
                 let entryPoint = function.getEntryPoint()

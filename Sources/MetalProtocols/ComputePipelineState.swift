@@ -3,6 +3,7 @@ public enum ComputePipelineStateError: Error {
 }
 
 public protocol ComputePipelineState {
+    var device: Device { get }
     var maxTotalThreadsPerThreadgroup: Int { get }
     var staticThreadgroupMemoryLength: Int { get }
     var threadExecutionWidth: Int { get }

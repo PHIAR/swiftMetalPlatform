@@ -4,9 +4,13 @@ import Foundation
 import MetalProtocols
 
 internal final class VkMetalLibrary: Library {
-    private let device: VkMetalDevice
+    private let _device: VkMetalDevice
     private let shaders: [String: [UInt32]]
     private let functionsArgumentTypes: [String: FunctionArgumentTypes]
+
+    public var device: Device {
+        return self._device
+    }
 
     private func getFunctionCreationParameters(name: String) -> (spirv: [UInt32],
                                                                  functionArgumentTypes: FunctionArgumentTypes)? {
@@ -28,7 +32,7 @@ internal final class VkMetalLibrary: Library {
     internal required init(device: VkMetalDevice,
                            shaders: [String: [UInt32]],
                            functionsArgumentTypes: [String: FunctionArgumentTypes] = [:]) {
-        self.device = device
+        self._device = device
         self.shaders = shaders
         self.functionsArgumentTypes = functionsArgumentTypes
     }
@@ -39,7 +43,7 @@ internal final class VkMetalLibrary: Library {
             preconditionFailure()
         }
 
-        return VkMetalFunction(device: self.device.getDevice(),
+        return VkMetalFunction(device: self._device.getDevice(),
                                spirv: spirv,
                                name: name,
                                functionArgumentTypes: functionArgumentTypes)
@@ -52,7 +56,7 @@ internal final class VkMetalLibrary: Library {
             preconditionFailure()
         }
 
-        return VkMetalFunction(device: self.device.getDevice(),
+        return VkMetalFunction(device: self._device.getDevice(),
                                spirv: spirv,
                                name: name,
                                functionArgumentTypes: functionArgumentTypes,
