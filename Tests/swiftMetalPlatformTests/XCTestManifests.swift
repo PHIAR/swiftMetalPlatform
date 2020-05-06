@@ -7,6 +7,7 @@ extension swiftMetalPlatformTests {
     // to regenerate.
     static let __allTests__swiftMetalPlatformTests = [
         ("testMetalCreateSystemDefaultDevice", testMetalCreateSystemDefaultDevice),
+        ("testMetalTextureClears", testMetalTextureClears),
     ]
 }
 

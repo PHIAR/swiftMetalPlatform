@@ -409,4 +409,61 @@ internal final class swiftMetalPlatformTests: XCTestCase {
         XCTAssertEqual(_sourceBuffer.contents().assumingMemoryBound(to: UInt8.self).pointee, 0xff)
         XCTAssertEqual(buffer.contents().assumingMemoryBound(to: UInt8.self).pointee, 0xff)
     }
+
+    func testMetalTextureClears() {
+        let device = MTLCreateSystemDefaultDevice()!
+        let commandQueue = device.makeCommandQueue()!
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
+                                                                  width: 64,
+                                                                  height: 64,
+                                                                  mipmapped: false)
+
+        descriptor.usage = [
+            .renderTarget,
+            .shaderRead,
+            .shaderWrite,
+        ]
+
+        let texture = device.makeTexture(descriptor: descriptor)!
+        let buffer = device.makeBuffer(length: descriptor.width * descriptor.height * 4,
+                                        options: .storageModeShared)!
+        let commandBuffer = commandQueue.makeCommandBuffer()!
+        let renderPassDescriptor = MTLRenderPassDescriptor()
+
+        renderPassDescriptor.colorAttachments[0].texture = texture
+        renderPassDescriptor.colorAttachments[0].loadAction = .clear
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0,
+                                                                       green: 0.0,
+                                                                       blue: 0.0,
+                                                                       alpha: 1.0)
+        let renderCommandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
+
+        renderCommandEncoder.endEncoding()
+
+        let blitCommandEncoder = commandBuffer.makeBlitCommandEncoder()!
+
+        blitCommandEncoder.fill(buffer: buffer,
+                                range: 0..<descriptor.width * descriptor.height * 4,
+                                value: 0xff)
+        blitCommandEncoder.copy(from: texture,
+                                sourceSlice: 0,
+                                sourceLevel: 0,
+                                sourceOrigin: MTLOrigin(),
+                                sourceSize: MTLSize(width: descriptor.width,
+                                                    height: descriptor.height,
+                                                    depth: 1),
+                                to: buffer,
+                                destinationOffset: 0,
+                                destinationBytesPerRow: descriptor.width * 4,
+                                destinationBytesPerImage: descriptor.width * descriptor.height * 4)
+        blitCommandEncoder.endEncoding()
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+
+        let array = Array(UnsafeBufferPointer(start: buffer.contents().assumingMemoryBound(to: UInt8.self),
+                                              count: descriptor.width * descriptor.height * 4))
+
+        print("XXX\n\(array)\nXXX\n")
+    }
 }
