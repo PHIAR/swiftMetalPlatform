@@ -148,32 +148,8 @@ internal final class VkMetalTexture: VkMetalResource,
         return self.imageView
     }
 
-    public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,
-                         bytesPerRow: Int,
-                         from: Region,
-                         mipmapLevel: Int) {
-    }
-
-    public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,
-                         bytesPerRow: Int,
-                         bytesPerImage: Int,
-                         from: Region,
-                         mipmapLevel: Int,
-                         slice: Int) {
-    }
-
-    public func replace(region: Region,
-                        mipmapLevel: Int,
-                        withBytes: UnsafeRawPointer,
-                        bytesPerRow: Int) {
-    }
-
-    public func replace(region: Region,
-                        mipmapLevel: Int,
-                        slice: Int,
-                        withBytes: UnsafeRawPointer,
-                        bytesPerRow: Int,
-                        bytesPerImage: Int) {
+    internal func getLayout() -> VulkanImageLayout {
+        return self.layout
     }
 
     internal func transitionTo(layout: VulkanImageLayout,
@@ -206,6 +182,34 @@ internal final class VkMetalTexture: VkMetalResource,
         ])
 
         self.layout = layout
+    }
+
+    public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,
+                         bytesPerRow: Int,
+                         from: Region,
+                         mipmapLevel: Int) {
+    }
+
+    public func getBytes(_ pixelBytes: UnsafeMutableRawPointer,
+                         bytesPerRow: Int,
+                         bytesPerImage: Int,
+                         from: Region,
+                         mipmapLevel: Int,
+                         slice: Int) {
+    }
+
+    public func replace(region: Region,
+                        mipmapLevel: Int,
+                        withBytes: UnsafeRawPointer,
+                        bytesPerRow: Int) {
+    }
+
+    public func replace(region: Region,
+                        mipmapLevel: Int,
+                        slice: Int,
+                        withBytes: UnsafeRawPointer,
+                        bytesPerRow: Int,
+                        bytesPerImage: Int) {
     }
 }
 

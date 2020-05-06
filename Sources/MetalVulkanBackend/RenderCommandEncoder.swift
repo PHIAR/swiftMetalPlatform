@@ -37,11 +37,11 @@ internal extension PrimitiveType {
 
 internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                   RenderCommandEncoder {
-    private let descriptor: RenderPassDescriptor
+    private let framebuffer: VulkanFramebuffer
+    private let renderPass: VulkanRenderPass
     private var currentRenderState = DynamicRenderState()
     private var renderPipelineState: VkMetalRenderPipelineState? = nil
     private var depthStencilState: DepthStencilState? = nil
-    private var isFramebufferBound = false
 
     internal func allocateDescriptorSets() {
         let renderPipelineState = self.renderPipelineState!
@@ -57,16 +57,35 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
     }
 
     private func bindPipeline(primitiveType: PrimitiveType) {
-        guard self.isFramebufferBound else {
-            return
-        }
-
+        let topology = primitiveType.toVulkanPrimitiveTopology()
         let renderPipelineState = self.renderPipelineState!
-        let device = self._device.getDevice()
-        let colorAttachments = self.descriptor.colorAttachments.attachments
+        let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
+                                                                       renderPass: self.renderPass,
+                                                                       renderState: self.currentRenderState)
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
+                                   pipeline: graphicsPipeline)
+    }
+
+    private func unbindFramebuffer() {
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        commandBuffer.endRenderPass()
+        super.endEncoding()
+    }
+
+    public init(descriptorPool: VulkanDescriptorPool,
+                commandBuffer: VkMetalCommandBuffer,
+                descriptor: RenderPassDescriptor) {
+        let colorAttachments = descriptor.colorAttachments.attachments
         var clearValues: [VkClearValue] = []
         let attachments: [VkAttachmentDescription] = colorAttachments.map { colorAttachment in
             let texture  = colorAttachment.texture as! VkMetalTexture
+
+            texture.transitionTo(layout: .colorAttachmentOptimal,
+                                 commandBuffer: commandBuffer.getCommandBuffer())
+
             let format = texture.pixelFormat.toVulkanFormat().toVkFormat()
             let loadOp = colorAttachment.loadAction.toVulkanAttachmentLoadOp().toVkAttachmentLoadOp()
             let storeOp = colorAttachment.storeAction.toVulkanAttachmentStoreOp().toVkAttachmentStoreOp()
@@ -95,11 +114,13 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
 
             return attachment
         }
+
+        let device = commandBuffer._device.getDevice()
         let subpass = VkSubpassDescription(flags: 0,
                                            pipelineBindPoint: VK_PIPELINE_BIND_POINT_GRAPHICS,
                                            inputAttachmentCount: 0,
                                            pInputAttachments: nil,
-                                           colorAttachmentCount: 1,
+                                           colorAttachmentCount: 0,
                                            pColorAttachments: nil,
                                            pResolveAttachments: nil,
                                            pDepthStencilAttachment: nil,
@@ -131,44 +152,22 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
                                                    imageViews: imageViews,
                                                    width: width,
                                                    height: height)
-        let commandBuffer = self.commandBuffer.getCommandBuffer()
         let renderArea = VkRect2D(offset: VkOffset2D(x: 0,
                                                      y: 0),
                                   extent: VkExtent2D(width: UInt32(width),
                                                      height: UInt32(height)))
 
-        commandBuffer.beginRenderPass(renderPass: renderPass,
-                                      framebuffer: framebuffer,
-                                      renderArea: renderArea,
-                                      clearValues: clearValues)
-        self.isFramebufferBound = true
-
-        let topology = primitiveType.toVulkanPrimitiveTopology()
-        let graphicsPipeline = renderPipelineState.getGraphicsPipeline(topology: topology,
-                                                                       renderPass: renderPass,
-                                                                       renderState: self.currentRenderState)
-
-        commandBuffer.bindPipeline(pipelineBindPoint: .graphics,
-                                   pipeline: graphicsPipeline)
-    }
-
-    private func unbindFramebuffer() {
-        guard self.isFramebufferBound else {
-            return
-        }
-
-        let commandBuffer = self.commandBuffer.getCommandBuffer()
-
-        commandBuffer.endRenderPass()
-        super.endEncoding()
-    }
-
-    public init(descriptorPool: VulkanDescriptorPool,
-                commandBuffer: VkMetalCommandBuffer,
-                descriptor: RenderPassDescriptor) {
-        self.descriptor = descriptor
+        self.framebuffer = framebuffer
+        self.renderPass = renderPass
         super.init(descriptorPool: descriptorPool,
                    commandBuffer: commandBuffer)
+
+        let _commandBuffer = self.commandBuffer.getCommandBuffer()
+
+        _commandBuffer.beginRenderPass(renderPass: renderPass,
+                                       framebuffer: framebuffer,
+                                       renderArea: renderArea,
+                                       clearValues: clearValues)
     }
 
     public func setBlendColor(red: Float,

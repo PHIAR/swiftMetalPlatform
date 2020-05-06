@@ -57,7 +57,7 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                          commandBuffer: commandBuffer)
         commandBuffer.copyBufferToImage(srcBuffer: _sourceBuffer.getBuffer(),
                                         dstImage: _destinationTexture.getImage(),
-                                        dstImageLayout: VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        dstImageLayout: _destinationTexture.getLayout(),
                                         regions: [ region ])
         self.commandBuffer.addTrackedResource(resource: _sourceBuffer)
         self.commandBuffer.addTrackedResource(resource: _destinationTexture)
@@ -95,7 +95,7 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
         _sourceTexture.transitionTo(layout: .transferSrcOptimal,
                                     commandBuffer: commandBuffer)
         commandBuffer.copyImageToBuffer(srcImage: _sourceTexture.getImage(),
-                                        srcImageLayout: VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                        srcImageLayout: _sourceTexture.getLayout(),
                                         dstBuffer: _destinationBuffer.getBuffer(),
                                         regions: [ region ])
         self.commandBuffer.addTrackedResource(resource: _sourceTexture)
