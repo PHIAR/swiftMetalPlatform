@@ -810,7 +810,7 @@ public final class TextureDescriptor {
         descriptor.pixelFormat = pixelFormat
         descriptor.width = width
         descriptor.height = height
-        descriptor.mipmapLevelCount = Int(ffs(min(Int32(width), Int32(height))))
+        descriptor.mipmapLevelCount = mipmapped ? Int(ffs(min(Int32(width), Int32(height)))) : 1
         return descriptor
     }
 
