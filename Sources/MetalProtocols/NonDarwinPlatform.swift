@@ -777,18 +777,18 @@ public final class SamplerDescriptor: Equatable {
     public func copy() -> Any {
         let samplerDescriptor = SamplerDescriptor()
 
-        samplerDescriptor.normalizedCoordinates = normalizedCoordinates
-        samplerDescriptor.rAddressMode = rAddressMode
-        samplerDescriptor.sAddressMode = sAddressMode
-        samplerDescriptor.tAddressMode = tAddressMode
-        samplerDescriptor.borderColor = borderColor
-        samplerDescriptor.minFilter = minFilter
-        samplerDescriptor.magFilter = magFilter
-        samplerDescriptor.mipFilter = mipFilter
-        samplerDescriptor.lodMinClamp = lodMinClamp
-        samplerDescriptor.lodMaxClamp = lodMaxClamp
-        samplerDescriptor.lodAverage = lodAverage
-        samplerDescriptor.maxAnisotropy = maxAnisotropy
+        samplerDescriptor.normalizedCoordinates = self.normalizedCoordinates
+        samplerDescriptor.rAddressMode = self.rAddressMode
+        samplerDescriptor.sAddressMode = self.sAddressMode
+        samplerDescriptor.tAddressMode = self.tAddressMode
+        samplerDescriptor.borderColor = self.borderColor
+        samplerDescriptor.minFilter = self.minFilter
+        samplerDescriptor.magFilter = self.magFilter
+        samplerDescriptor.mipFilter = self.mipFilter
+        samplerDescriptor.lodMinClamp = self.lodMinClamp
+        samplerDescriptor.lodMaxClamp = self.lodMaxClamp
+        samplerDescriptor.lodAverage = self.lodAverage
+        samplerDescriptor.maxAnisotropy = self.maxAnisotropy
         return samplerDescriptor
     }
 }
