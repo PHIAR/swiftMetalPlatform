@@ -6,7 +6,7 @@ extension swiftMetalPlatformTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__swiftMetalPlatformTests = [
-        ("testMetalCreateSystemDefaultDevice", testMetalCreateSystemDefaultDevice),
+        //("testMetalCreateSystemDefaultDevice", testMetalCreateSystemDefaultDevice),
         ("testMetalTextureClears", testMetalTextureClears),
     ]
 }

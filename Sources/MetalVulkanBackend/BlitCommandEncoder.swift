@@ -46,9 +46,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                      height: UInt32(sourceSize.height),
                                      depth: UInt32(sourceSize.depth))
         let region = VkBufferImageCopy(bufferOffset: VkDeviceSize(sourceOffset),
-                                       bufferRowLength: UInt32(sourceBytesPerRow),
-                                       bufferImageHeight: UInt32(sourceBytesPerImage /
-                                                                 sourceBytesPerRow),
+                                       bufferRowLength: UInt32(sourceSize.width),
+                                       bufferImageHeight: UInt32(sourceSize.height),
                                        imageSubresource: imageSubresource,
                                        imageOffset: imageOffset,
                                        imageExtent: imageExtent)
@@ -84,9 +83,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                      height: UInt32(sourceSize.height),
                                      depth: UInt32(sourceSize.depth))
         let region = VkBufferImageCopy(bufferOffset: VkDeviceSize(destinationOffset),
-                                       bufferRowLength: UInt32(destinationBytesPerRow),
-                                       bufferImageHeight: UInt32(destinationBytesPerImage /
-                                                                 destinationBytesPerRow),
+                                       bufferRowLength: UInt32(sourceSize.width),
+                                       bufferImageHeight: UInt32(sourceSize.height),
                                        imageSubresource: imageSubresource,
                                        imageOffset: imageOffset,
                                        imageExtent: imageExtent)

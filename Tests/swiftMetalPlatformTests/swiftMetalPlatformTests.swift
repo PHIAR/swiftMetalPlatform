@@ -434,9 +434,9 @@ internal final class swiftMetalPlatformTests: XCTestCase {
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].storeAction = .store
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0,
-                                                                       green: 0.0,
-                                                                       blue: 0.0,
-                                                                       alpha: 1.0)
+                                                                            green: 0.0,
+                                                                            blue: 0.0,
+                                                                            alpha: 1.0)
         let renderCommandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
 
         renderCommandEncoder.endEncoding()
@@ -464,6 +464,6 @@ internal final class swiftMetalPlatformTests: XCTestCase {
         let array = Array(UnsafeBufferPointer(start: buffer.contents().assumingMemoryBound(to: UInt8.self),
                                               count: descriptor.width * descriptor.height * 4))
 
-        print("XXX\n\(array)\nXXX\n")
+        //print("XXX\n\(array)\nXXX\n")
     }
 }
