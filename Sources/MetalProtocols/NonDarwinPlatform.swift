@@ -149,7 +149,17 @@ public enum PixelFormat: Int {
     case invalid
     case bgr10_xr
     case bgra8Unorm
+    case bgrg422
+    case r8Snorm
+    case r8Unorm
+    case r16Float
+    case r32Float
+    case rg16Float
+    case rg32Float
+    case rgba8Snorm
     case rgba8Unorm
+    case rgba16Float
+    case rgba32Float
 }
 
 public enum PrimitiveType {
