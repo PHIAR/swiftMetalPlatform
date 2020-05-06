@@ -93,7 +93,7 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
         commandBuffer.copyImageToBuffer(srcImage: _sourceTexture.getImage(),
-                                        srcImageLayout: VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        srcImageLayout: VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                         dstBuffer: _destinationBuffer.getBuffer(),
                                         regions: [ region ])
         self.commandBuffer.addTrackedResource(resource: _sourceTexture)

@@ -104,13 +104,21 @@ internal final class VkMetalTexture: VkMetalResource,
         let mipLevels = max(1, descriptor.mipmapLevelCount)
         let arrayLayers = max(1, descriptor.arrayLength)
         let _device = device.getDevice()
+        var usage = VK_IMAGE_USAGE_SAMPLED_BIT.rawValue |
+                    VK_IMAGE_USAGE_TRANSFER_SRC_BIT.rawValue
+
+        if descriptor.usage.contains(.renderTarget) {
+            usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT.rawValue
+        }
+
         let image = _device.createImage(flags: flags,
                                         imageType: imageType,
                                         format: format,
                                         extent: extent,
                                         mipLevels: mipLevels,
                                         arrayLayers: arrayLayers,
-                                        usage: VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue,
+                                        tiling: VK_IMAGE_TILING_LINEAR,
+                                        usage: usage,
                                         queueFamilies: queueFamilies)
         let imageMemoryRequirements = image.getImageMemoryRequirements()
         let deviceMemory = _device.allocateMemory(size: Int(imageMemoryRequirements.size),
@@ -120,7 +128,8 @@ internal final class VkMetalTexture: VkMetalResource,
                               offset: 0)
         self.init(device: device,
                   descriptor: descriptor,
-                  image: image)
+                  image: image,
+                  deviceMemory: deviceMemory)
     }
 
     internal func getImage() -> VulkanImage {
