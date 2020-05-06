@@ -445,7 +445,7 @@ internal final class swiftMetalPlatformTests: XCTestCase {
 
         blitCommandEncoder.fill(buffer: buffer,
                                 range: 0..<descriptor.width * descriptor.height * 4,
-                                value: 0xff)
+                                value: 0)
         blitCommandEncoder.copy(from: texture,
                                 sourceSlice: 0,
                                 sourceLevel: 0,
@@ -464,6 +464,6 @@ internal final class swiftMetalPlatformTests: XCTestCase {
         let array = Array(UnsafeBufferPointer(start: buffer.contents().assumingMemoryBound(to: UInt8.self),
                                               count: descriptor.width * descriptor.height * 4))
 
-        //print("XXX\n\(array)\nXXX\n")
+        XCTAssertEqual(array.reduce(0) { $0 + Int($1) }, array.count / 4 * 255 * 2)
     }
 }
