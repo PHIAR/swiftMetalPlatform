@@ -158,23 +158,43 @@ internal final class VkMetalTexture: VkMetalResource,
             return
         }
 
-        let srcAccessMask: VkAccessFlags
-        let dstAccessMask: VkAccessFlags
-        let srcStageMask: VkPipelineStageFlags
-        let dstStageMask: VkPipelineStageFlags
+        var srcAccessMask = VkAccessFlags(0)
+        var dstAccessMask = VkAccessFlags(0)
+        var srcStageMask = VkPipelineStageFlags(0)
+        var dstStageMask = VkPipelineStageFlags(0)
+
+        switch self.layout {
+        case .colorAttachmentOptimal:
+            srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT.rawValue
+            srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue
+
+        case .transferDstOptimal:
+            srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT.rawValue
+            srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue
+
+        case .transferSrcOptimal:
+            srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT.rawValue
+            srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue
+
+        case .undefined:
+            srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT.rawValue
+
+        default:
+            preconditionFailure()
+        }
 
         switch layout {
         case .colorAttachmentOptimal:
-            srcAccessMask = VkAccessFlags(0)
-            dstAccessMask = VkAccessFlags(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT.rawValue)
-            srcStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue)
-            dstStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue)
+            dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT.rawValue
+            dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue
+
+        case .transferDstOptimal:
+            dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT.rawValue
+            dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue
 
         case .transferSrcOptimal:
-            srcAccessMask = VkAccessFlags(0)
-            dstAccessMask = VkAccessFlags(VK_ACCESS_TRANSFER_WRITE_BIT.rawValue)
-            srcStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue)
-            dstStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue)
+            dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT.rawValue
+            dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue
 
         default:
             preconditionFailure()

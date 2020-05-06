@@ -116,16 +116,19 @@ internal final class VkMetalRenderCommandEncoder: VkMetalCommandEncoder,
         }
 
         let device = commandBuffer._device.getDevice()
-        let subpass = VkSubpassDescription(flags: 0,
-                                           pipelineBindPoint: VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                           inputAttachmentCount: 0,
-                                           pInputAttachments: nil,
-                                           colorAttachmentCount: 0,
-                                           pColorAttachments: nil,
-                                           pResolveAttachments: nil,
-                                           pDepthStencilAttachment: nil,
-                                           preserveAttachmentCount: 0,
-                                           pPreserveAttachments: nil)
+        var colorAttachmentReferences: [VkAttachmentReference] = []
+
+        for i in 0..<colorAttachments.count {
+            var attachmentReference = VkAttachmentReference()
+
+            attachmentReference.attachment = UInt32(i)
+            attachmentReference.layout = (colorAttachments[i].texture as! VkMetalTexture).getLayout().toVkImageLayout()
+            colorAttachmentReferences.append(attachmentReference)
+        }
+
+        let subpass = VulkanSubpassDescription(flags: 0,
+                                               pipelineBindPoint: .graphics,
+                                               colorAttachments: colorAttachmentReferences)
         let dependency = VkSubpassDependency(srcSubpass: VK_SUBPASS_EXTERNAL,
                                              dstSubpass: 0,
                                              srcStageMask: VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue,
