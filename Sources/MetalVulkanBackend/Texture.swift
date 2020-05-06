@@ -158,13 +158,35 @@ internal final class VkMetalTexture: VkMetalResource,
             return
         }
 
+        let srcAccessMask: VkAccessFlags
+        let dstAccessMask: VkAccessFlags
+        let srcStageMask: VkPipelineStageFlags
+        let dstStageMask: VkPipelineStageFlags
+
+        switch layout {
+        case .colorAttachmentOptimal:
+            srcAccessMask = VkAccessFlags(0)
+            dstAccessMask = VkAccessFlags(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT.rawValue)
+            srcStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue)
+            dstStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT.rawValue)
+
+        case .transferSrcOptimal:
+            srcAccessMask = VkAccessFlags(0)
+            dstAccessMask = VkAccessFlags(VK_ACCESS_TRANSFER_WRITE_BIT.rawValue)
+            srcStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue)
+            dstStageMask = VkPipelineStageFlags(VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue)
+
+        default:
+            preconditionFailure()
+        }
+
         let subResourceRange = VkImageSubresourceRange(aspectMask: VK_IMAGE_ASPECT_COLOR_BIT.rawValue,
                                                        baseMipLevel: 0,
                                                        levelCount: VK_REMAINING_MIP_LEVELS,
                                                        baseArrayLayer: 0,
                                                        layerCount: VK_REMAINING_ARRAY_LAYERS)
-        let imageMemoryBarrier = VulkanImageMemoryBarrier(srcAccessMask: 0,
-                                                          dstAccessMask: VK_ACCESS_TRANSFER_WRITE_BIT.rawValue,
+        let imageMemoryBarrier = VulkanImageMemoryBarrier(srcAccessMask: srcAccessMask,
+                                                          dstAccessMask: dstAccessMask,
                                                           oldLayout: self.layout,
                                                           newLayout: layout,
                                                           srcQueueFamilyIndex: self._device.getQueueFamilyIndex(),
@@ -172,8 +194,8 @@ internal final class VkMetalTexture: VkMetalResource,
                                                           image: self.image,
                                                           subresourceRange: subResourceRange)
 
-        commandBuffer.pipelineBarrier(srcStageMask: VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue,
-                                      dstStageMask: VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue,
+        commandBuffer.pipelineBarrier(srcStageMask: srcStageMask,
+                                      dstStageMask: dstStageMask,
                                       dependencyFlags: 0,
                                       memoryBarriers: [],
                                       bufferMemoryBarriers: [],
