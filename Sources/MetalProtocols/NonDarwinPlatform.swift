@@ -670,6 +670,23 @@ public class RenderPassDescriptor: Equatable {
 
     public init() {
     }
+
+    public func copy() -> Any {
+        let renderPassDescriptor = RenderPassDescriptor()
+
+        renderPassDescriptor.colorAttachments = self.colorAttachments
+        renderPassDescriptor.depthAttachment = self.depthAttachment
+        renderPassDescriptor.stencilAttachment = self.stencilAttachment
+        renderPassDescriptor.renderTargetArrayLength = self.renderTargetArrayLength
+        renderPassDescriptor.renderTargetWidth = self.renderTargetWidth
+        renderPassDescriptor.renderTargetHeight = self.renderTargetHeight
+        renderPassDescriptor.imageblockSampleLength = self.imageblockSampleLength
+        renderPassDescriptor.threadgroupMemoryLength = self.threadgroupMemoryLength
+        renderPassDescriptor.tileWidth = self.tileWidth
+        renderPassDescriptor.tileHeight = self.tileHeight
+        renderPassDescriptor.defaultRasterSampleCount = self.defaultRasterSampleCount
+        return renderPassDescriptor
+    }
 }
 
 public class RenderPipelineColorAttachmentDescriptor {
