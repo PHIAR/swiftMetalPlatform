@@ -8,21 +8,24 @@ internal final class VkMetalTexture: VkMetalResource,
     private let image: VulkanImage
     private let deviceMemory: VulkanDeviceMemory?
     private let imageView: VulkanImageView?
+    private let _textureType: TextureType
+    private let _pixelFormat: PixelFormat
     private let size: Size
     private let _mipmapLevelCount: Int
     private let _sampleCount: Int
     private let _arrayLength: Int
+    private var layout: VulkanImageLayout = .undefined
 
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
     }
 
     public var textureType: TextureType {
-        return .type2D
+        return self._textureType
     }
 
     public var pixelFormat: PixelFormat {
-        return .rgba8Unorm
+        return self._pixelFormat
     }
 
     public var width: Int {
@@ -57,8 +60,10 @@ internal final class VkMetalTexture: VkMetalResource,
         let extent = VkExtent3D(width: UInt32(descriptor.width),
                                 height: UInt32(descriptor.height),
                                 depth: UInt32(max(1, descriptor.depth)))
-        let viewType = descriptor.textureType.toVulkanImageViewType()
-        let format = descriptor.pixelFormat.toVulkanFormat()
+        let textureType = descriptor.textureType
+        let viewType = textureType.toVulkanImageViewType()
+        let pixelFormat = descriptor.pixelFormat
+        let format = pixelFormat.toVulkanFormat()
         let mipLevels = max(1, descriptor.mipmapLevelCount)
         let arrayLayers = max(1, descriptor.arrayLength)
         let _device = device.getDevice()
@@ -81,6 +86,8 @@ internal final class VkMetalTexture: VkMetalResource,
         self.image = image
         self.deviceMemory = deviceMemory
         self.imageView = imageView
+        self._textureType = textureType
+        self._pixelFormat = pixelFormat
         self.size = Size(width: Int(extent.width),
                          height: Int(extent.height),
                          depth: Int(extent.depth))
@@ -105,6 +112,7 @@ internal final class VkMetalTexture: VkMetalResource,
         let arrayLayers = max(1, descriptor.arrayLength)
         let _device = device.getDevice()
         var usage = VK_IMAGE_USAGE_SAMPLED_BIT.rawValue |
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT.rawValue |
                     VK_IMAGE_USAGE_TRANSFER_SRC_BIT.rawValue
 
         if descriptor.usage.contains(.renderTarget) {
