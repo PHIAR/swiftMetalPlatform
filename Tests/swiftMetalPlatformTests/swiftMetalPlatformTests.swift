@@ -426,7 +426,7 @@ internal final class swiftMetalPlatformTests: XCTestCase {
 
         let texture = device.makeTexture(descriptor: descriptor)!
         let buffer = device.makeBuffer(length: descriptor.width * descriptor.height * 4,
-                                        options: .storageModeShared)!
+                                       options: .storageModeShared)!
         let commandBuffer = commandQueue.makeCommandBuffer()!
         let renderPassDescriptor = MTLRenderPassDescriptor()
 
