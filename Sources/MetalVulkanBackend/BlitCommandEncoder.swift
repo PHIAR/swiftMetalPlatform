@@ -53,6 +53,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                        imageExtent: imageExtent)
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        _destinationTexture.transitionTo(layout: .transferDstOptimal,
+                                         commandBuffer: commandBuffer)
         commandBuffer.copyBufferToImage(srcBuffer: _sourceBuffer.getBuffer(),
                                         dstImage: _destinationTexture.getImage(),
                                         dstImageLayout: VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -90,6 +92,8 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                                        imageExtent: imageExtent)
         let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        _sourceTexture.transitionTo(layout: .transferSrcOptimal,
+                                    commandBuffer: commandBuffer)
         commandBuffer.copyImageToBuffer(srcImage: _sourceTexture.getImage(),
                                         srcImageLayout: VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                         dstBuffer: _destinationBuffer.getBuffer(),
@@ -102,7 +106,12 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                      to destinationTexture: Texture) {
         let _sourceTexture = sourceTexture as! VkMetalTexture
         let _destinationTexture = destinationTexture as! VkMetalTexture
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        _sourceTexture.transitionTo(layout: .transferSrcOptimal,
+                                    commandBuffer: commandBuffer)
+        _destinationTexture.transitionTo(layout: .transferDstOptimal,
+                                         commandBuffer: commandBuffer)
         self.commandBuffer.addTrackedResource(resource: _sourceTexture)
         self.commandBuffer.addTrackedResource(resource: _destinationTexture)
     }
@@ -117,7 +126,12 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                      levelCount: Int) {
         let _sourceTexture = sourceTexture as! VkMetalTexture
         let _destinationTexture = destinationTexture as! VkMetalTexture
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        _sourceTexture.transitionTo(layout: .transferSrcOptimal,
+                                    commandBuffer: commandBuffer)
+        _destinationTexture.transitionTo(layout: .transferDstOptimal,
+                                         commandBuffer: commandBuffer)
         self.commandBuffer.addTrackedResource(resource: _sourceTexture)
         self.commandBuffer.addTrackedResource(resource: _destinationTexture)
     }
@@ -133,7 +147,12 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
                      destinationOrigin: Origin) {
         let _sourceTexture = sourceTexture as! VkMetalTexture
         let _destinationTexture = destinationTexture as! VkMetalTexture
+        let commandBuffer = self.commandBuffer.getCommandBuffer()
 
+        _sourceTexture.transitionTo(layout: .transferSrcOptimal,
+                                    commandBuffer: commandBuffer)
+        _destinationTexture.transitionTo(layout: .transferDstOptimal,
+                                         commandBuffer: commandBuffer)
         self.commandBuffer.addTrackedResource(resource: _sourceTexture)
         self.commandBuffer.addTrackedResource(resource: _destinationTexture)
     }
@@ -155,9 +174,11 @@ internal final class VkMetalBlitCommandEncoder: VkMetalCommandEncoder,
         self.commandBuffer.addTrackedResource(resource: _buffer)
     }
 
-    public func generateMipmaps(for: Texture) {
-        let _for = `for` as! VkMetalTexture
+    public func generateMipmaps(for sourceTexture: Texture) {
+        let _sourceTexture = sourceTexture as! VkMetalTexture
 
-        self.commandBuffer.addTrackedResource(resource: _for)
+        _sourceTexture.transitionTo(layout: .transferSrcOptimal,
+                                    commandBuffer: commandBuffer.getCommandBuffer())
+        self.commandBuffer.addTrackedResource(resource: _sourceTexture)
     }
 }

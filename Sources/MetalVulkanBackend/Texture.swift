@@ -175,4 +175,37 @@ internal final class VkMetalTexture: VkMetalResource,
                         bytesPerRow: Int,
                         bytesPerImage: Int) {
     }
+
+    internal func transitionTo(layout: VulkanImageLayout,
+                               commandBuffer: VulkanCommandBuffer) {
+        guard self.layout != layout else {
+            return
+        }
+
+        let subResourceRange = VkImageSubresourceRange(aspectMask: VK_IMAGE_ASPECT_COLOR_BIT.rawValue,
+                                                       baseMipLevel: 0,
+                                                       levelCount: VK_REMAINING_MIP_LEVELS,
+                                                       baseArrayLayer: 0,
+                                                       layerCount: VK_REMAINING_ARRAY_LAYERS)
+        let imageMemoryBarrier = VulkanImageMemoryBarrier(srcAccessMask: 0,
+                                                          dstAccessMask: VK_ACCESS_TRANSFER_WRITE_BIT.rawValue,
+                                                          oldLayout: self.layout,
+                                                          newLayout: layout,
+                                                          srcQueueFamilyIndex: self._device.getQueueFamilyIndex(),
+                                                          dstQueueFamilyIndex: self._device.getQueueFamilyIndex(),
+                                                          image: self.image,
+                                                          subresourceRange: subResourceRange)
+
+        commandBuffer.pipelineBarrier(srcStageMask: VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue,
+                                      dstStageMask: VK_PIPELINE_STAGE_TRANSFER_BIT.rawValue,
+                                      dependencyFlags: 0,
+                                      memoryBarriers: [],
+                                      bufferMemoryBarriers: [],
+                                      imageMemoryBarriers: [
+            imageMemoryBarrier,
+        ])
+
+        self.layout = layout
+    }
 }
+
