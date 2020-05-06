@@ -83,6 +83,9 @@ public typealias MTLVertexDescriptor = VertexDescriptor
 public typealias MTLViewport = Viewport
 public typealias MTLWinding = Winding
 
+
+public let MTLClearColorMake = ClearColorMake
+
 #if os(macOS)
 public extension CaptureManager {
     func makeCaptureScope(device: Device) -> CaptureScope {

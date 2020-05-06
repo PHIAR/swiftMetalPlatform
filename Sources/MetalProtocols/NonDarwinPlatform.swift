@@ -935,3 +935,13 @@ public final class VertexDescriptor {
         self.layouts = VertexBufferLayoutDescriptorArray()
     }
 }
+
+public func ClearColorMake(_ red: Double,
+                           _ green: Double,
+                           _ blue: Double,
+                           _ alpha: Double) -> ClearColor {
+    return ClearColor(red: Float(red),
+                      green: Float(green),
+                      blue: Float(blue),
+                      alpha: Float(alpha))
+}
