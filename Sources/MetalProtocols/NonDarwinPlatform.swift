@@ -319,10 +319,20 @@ public protocol Layer {
 }
 
 public struct ClearColor {
-    public var red = Float(0.0)
-    public var green = Float(0.0)
-    public var blue = Float(0.0)
-    public var alpha = Float(0.0)
+    public var red: Float
+    public var green: Float
+    public var blue: Float
+    public var alpha: Float
+
+    public init(red: Float = 0.0,
+                green: Float = 0.0,
+                blue: Float = 0.0,
+                alpha: Float = 1.0) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+        self.alpha = alpha
+    }
 }
 
 public struct ColorWriteMask: OptionSet {
@@ -346,11 +356,16 @@ public struct FunctionConstantValues {
 }
 
 public struct Origin {
-    public var x = 0
-    public var y = 0
-    public var z = 0
+    public var x: Int
+    public var y: Int
+    public var z: Int
 
-    public init() {
+    public init(x: Int = 0,
+                y: Int = 0,
+                z: Int = 0) {
+        self.x = x
+        self.y = y
+        self.z = z
     }
 }
 
