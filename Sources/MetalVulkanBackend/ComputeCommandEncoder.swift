@@ -57,6 +57,11 @@ internal final class VkMetalComputeCommandEncoder: VkMetalCommandEncoder,
         self.allocateDescriptorSet()
     }
 
+    func dispatchThreadgroups(indirectBuffer: Buffer,
+                              indirectBufferOffset: Int,
+                              threadsPerThreadgroup: Size) {
+    }
+
     public func setBuffer(_ buffer: Buffer?,
                           offset: Int,
                           index: Int) {

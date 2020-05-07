@@ -5,6 +5,10 @@ public protocol ComputeCommandEncoder: CommandEncoder {
     func dispatchThreads(_ threadsPerGrid: Size,
                          threadsPerThreadgroup: Size)
 
+    func dispatchThreadgroups(indirectBuffer: Buffer,
+                              indirectBufferOffset: Int,
+                              threadsPerThreadgroup: Size)
+
     func setBuffer(_ buffer: Buffer?,
                    offset: Int,
                    index: Int)
