@@ -444,6 +444,18 @@ public struct ColorWriteMask: OptionSet {
     }
 }
 
+public struct DispatchThreadgroupsIndirectArguments {
+    public var threadgroupsPerGrid: (UInt32, UInt32, UInt32)
+
+    public init() {
+        self.init(threadgroupsPerGrid: (0, 0, 0))
+    }
+
+    public init(threadgroupsPerGrid: (UInt32, UInt32, UInt32)) {
+        self.threadgroupsPerGrid = threadgroupsPerGrid
+    }
+}
+
 public class FunctionConstantValues {
     public init() {
     }

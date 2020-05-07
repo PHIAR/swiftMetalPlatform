@@ -34,6 +34,7 @@ public typealias MTLDataType = DataType
 public typealias MTLDepthStencilDescriptor = DepthStencilDescriptor
 public typealias MTLDepthStencilState = DepthStencilState
 public typealias MTLDevice = Device
+public typealias MTLDispatchThreadgroupsIndirectArguments = DispatchThreadgroupsIndirectArguments
 public typealias MTLDrawable = Drawable
 public typealias MTLEvent = Event
 public typealias MTLFeatureSet = FeatureSet
