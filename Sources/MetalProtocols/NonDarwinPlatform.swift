@@ -154,6 +154,8 @@ public enum PixelFormat: Int {
     case r8Unorm
     case r16Float
     case r32Float
+    case rg8Snorm
+    case rg8Unorm
     case rg16Float
     case rg32Float
     case rgba8Snorm

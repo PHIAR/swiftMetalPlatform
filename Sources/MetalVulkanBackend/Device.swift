@@ -24,6 +24,8 @@ internal extension PixelFormat {
         .r8Unorm: .r8UNorm,
         .r16Float: .r16SFloat,
         .r32Float: .r32SFloat,
+        .rg8Snorm: .r8g8SNorm,
+        .rg8Unorm: .r8g8UNorm,
         .rg16Float: .r16g16SFloat,
         .rg32Float: .r32g32SFloat,
         .rgba8Snorm: .r8g8b8a8SNorm,
