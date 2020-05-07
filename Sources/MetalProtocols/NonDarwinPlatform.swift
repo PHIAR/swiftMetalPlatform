@@ -68,6 +68,88 @@ public enum DepthClipMode {
     case clip
 }
 
+public enum DataType {
+    case none
+    case `struct`
+    case array
+    case pointer
+    case texture
+    case sampler
+    case r16Snorm
+    case r16Unorm
+    case r8Snorm
+    case r8Unorm
+    case rg11b10Float
+    case rg16Snorm
+    case rg16Unorm
+    case rg8Snorm
+    case rg8Unorm
+    case rgb10a2Unorm
+    case rgb9e5Float
+    case rgba16Snorm
+    case rgba16Unorm
+    case rgba8Snorm
+    case rgba8Unorm
+    case rgba8Unorm_srgb
+    case float
+    case float2
+    case float3
+    case float4
+    case float2x2
+    case float2x3
+    case float2x4
+    case float3x2
+    case float3x3
+    case float3x4
+    case float4x2
+    case float4x3
+    case float4x4
+    case half
+    case half2
+    case half3
+    case half4
+    case half2x2
+    case half2x3
+    case half2x4
+    case half3x2
+    case half3x3
+    case half3x4
+    case half4x2
+    case half4x3
+    case half4x4
+    case int
+    case int2
+    case int3
+    case int4
+    case uint
+    case uint2
+    case uint3
+    case uint4
+    case short
+    case short2
+    case short3
+    case short4
+    case ushort
+    case ushort2
+    case ushort3
+    case ushort4
+    case char
+    case char2
+    case char3
+    case char4
+    case uchar
+    case uchar2
+    case uchar3
+    case uchar4
+    case bool
+    case bool2
+    case bool3
+    case bool4
+    case indirectCommandBuffer
+    case renderPipeline
+    case computePipeline
+}
+
 public enum DispatchType {
     case concurrent
     case serial
@@ -362,8 +444,26 @@ public struct ColorWriteMask: OptionSet {
     }
 }
 
-public struct FunctionConstantValues {
+public class FunctionConstantValues {
     public init() {
+    }
+
+    public func reset() {
+    }
+
+    public func setConstantValue(_ value: UnsafeRawPointer,
+                                 type: DataType,
+                                 index: Int) {
+    }
+
+    public func setConstantValue(_ value: UnsafeRawPointer,
+                                 type: DataType,
+                                 withName name: String) {
+    }
+
+    public func setConstantValues(_ values: UnsafeRawPointer,
+                                  type: DataType,
+                                  range: Range<Int>) {
     }
 }
 

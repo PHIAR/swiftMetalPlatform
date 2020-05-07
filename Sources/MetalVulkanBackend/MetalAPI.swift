@@ -30,6 +30,7 @@ public typealias MTLComputeCommandEncoder = ComputeCommandEncoder
 public typealias MTLComputePipelineState = ComputePipelineState
 public typealias MTLCullMode = CullMode
 public typealias MTLCPUCacheMode = CPUCacheMode
+public typealias MTLDataType = DataType
 public typealias MTLDepthStencilDescriptor = DepthStencilDescriptor
 public typealias MTLDepthStencilState = DepthStencilState
 public typealias MTLDevice = Device
