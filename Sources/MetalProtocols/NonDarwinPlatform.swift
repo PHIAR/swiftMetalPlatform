@@ -456,29 +456,6 @@ public struct DispatchThreadgroupsIndirectArguments {
     }
 }
 
-public class FunctionConstantValues {
-    public init() {
-    }
-
-    public func reset() {
-    }
-
-    public func setConstantValue(_ value: UnsafeRawPointer,
-                                 type: DataType,
-                                 index: Int) {
-    }
-
-    public func setConstantValue(_ value: UnsafeRawPointer,
-                                 type: DataType,
-                                 withName name: String) {
-    }
-
-    public func setConstantValues(_ values: UnsafeRawPointer,
-                                  type: DataType,
-                                  range: Range<Int>) {
-    }
-}
-
 public struct Origin {
     public var x: Int
     public var y: Int
@@ -665,6 +642,29 @@ public final class DepthStencilDescriptor {
     public var label = ""
 
     public init() {
+    }
+}
+
+public class FunctionConstantValues {
+    public init() {
+    }
+
+    public func reset() {
+    }
+
+    public func setConstantValue(_ value: UnsafeRawPointer,
+                                 type: DataType,
+                                 index: Int) {
+    }
+
+    public func setConstantValue(_ value: UnsafeRawPointer,
+                                 type: DataType,
+                                 withName name: String) {
+    }
+
+    public func setConstantValues(_ values: UnsafeRawPointer,
+                                  type: DataType,
+                                  range: Range<Int>) {
     }
 }
 
