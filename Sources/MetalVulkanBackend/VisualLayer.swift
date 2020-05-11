@@ -184,7 +184,9 @@ open class VisualLayer: Layer {
         let instance = physicalDevice.getInstance()
         let surface: VulkanSurface
 
-    #if os(Android)
+    #if os(macOS)
+        surface = instance.createMacOSSurface(view: self.nativeWindowHandle)
+    #elseif os(Android)
         surface = instance.createAndroidSurface(window: self.nativeWindowHandle)
     #elseif os(Linux)
         let display = XOpenDisplay(nil)!
