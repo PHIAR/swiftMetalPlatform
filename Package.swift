@@ -5,6 +5,12 @@ import PackageDescription
 var products: [Product] = []
 var targets: [Target] = []
 
+let platforms: [SupportedPlatform] = [
+    .iOS("13.2"),
+    .macOS("10.15"),
+    .tvOS("13.2")
+]
+
 // MARK - Metal
 
 let spirvCrossTarget = Target.systemLibrary(name: "SPIRVCross")
@@ -40,6 +46,7 @@ products.append(.library(name: "Metal",
 ]))
 
 let package = Package(name: "swiftMetalPlatform",
+                      platforms: platforms,
                       products: products,
                       dependencies: [
     .package(url: "https://github.com/PHIAR/swiftVulkan.git",
