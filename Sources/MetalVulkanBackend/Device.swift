@@ -379,20 +379,18 @@ internal final class VkMetalDevice: Device {
         precondition(!spirv.isEmpty)
 
         return self.makeLibrary(spirv: spirv,
-                                functionArgumentTypes: [])
+                                functionArgumentTypes: [:])
     }
 
     public func makeLibrary(spirv: [UInt32],
-                            functionArgumentTypes: FunctionArgumentTypes) -> Library {
+                            functionArgumentTypes: [String: FunctionArgumentTypes]) -> Library {
         precondition(!spirv.isEmpty)
 
         return VkMetalLibrary(device: self,
                               shaders: [
             "": spirv,
         ],
-                              functionsArgumentTypes: [
-            "": functionArgumentTypes,
-        ])
+                              functionsArgumentTypes: functionArgumentTypes)
     }
 
     public func makeLibrary(URL: URL) throws -> Library {

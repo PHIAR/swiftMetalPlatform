@@ -59,7 +59,7 @@ public protocol Device {
     func makeLibrary(spirv: [UInt32]) -> Library
 
     func makeLibrary(spirv: [UInt32],
-                     functionArgumentTypes: FunctionArgumentTypes) -> Library
+                     functionArgumentTypes: [String: FunctionArgumentTypes]) -> Library
 
     func makeLibrary(URL: URL) throws -> Library
 
