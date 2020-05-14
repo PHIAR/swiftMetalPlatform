@@ -18,7 +18,7 @@ internal final class VkMetalLibrary: Library {
            let first = self.shaders.first,
            first.key.isEmpty {
             return (spirv: first.value,
-                    functionArgumentTypes: self.functionsArgumentTypes.first?.value ?? [])
+                    functionArgumentTypes: self.functionsArgumentTypes[name] ?? [])
         }
 
         guard let spirv = self.shaders[name] else {
