@@ -70,10 +70,6 @@ spirvReflectCreateDescriptorSetLayout(char const *entry_point,
     descriptor_set_layout.bindingCount = bindingCount;
     descriptor_set_layout.bindings = static_cast <VkDescriptorSetLayoutBinding *> (calloc(bindingCount, sizeof(VkDescriptorSetLayoutBinding)));
 
-#if SPIRV_REFLECT_ENABLE_LOG
-    printf("specializationConstants: %zu\n", specializationConstants.size());
-#endif
-
     auto &&workgroup_sizes = (spirv_cross::SpecializationConstant[]) {
         spirv_cross::SpecializationConstant(),
         spirv_cross::SpecializationConstant(),
