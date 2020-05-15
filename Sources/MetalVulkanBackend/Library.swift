@@ -4,6 +4,8 @@ import Foundation
 import MetalProtocols
 
 internal final class VkMetalLibrary: Library {
+    private static let version = 1.0
+
     private let _device: VkMetalDevice
     private let shaders: [String: [UInt32]]
     private let functionsArgumentTypes: [String: FunctionArgumentTypes]
@@ -29,12 +31,34 @@ internal final class VkMetalLibrary: Library {
                 functionArgumentTypes: self.functionsArgumentTypes[name] ?? [])
     }
 
+    internal convenience init(device: VkMetalDevice,
+                              data: Data) {
+        let container = try! JSONSerialization.jsonObject(with: data,
+                                                          options: []) as! [String: Any]
+        let shaders = container["shaders"] as! [String: [UInt32]]
+        let functionsArgumentTypes = container["functionsArgumentTypes"] as! [String: FunctionArgumentTypes]
+
+        self.init(device: device,
+                  shaders: shaders,
+                  functionsArgumentTypes: functionsArgumentTypes)
+    }
+
     internal required init(device: VkMetalDevice,
                            shaders: [String: [UInt32]],
                            functionsArgumentTypes: [String: FunctionArgumentTypes] = [:]) {
         self._device = device
         self.shaders = shaders
         self.functionsArgumentTypes = functionsArgumentTypes
+    }
+
+    public func getData() -> Data? {
+        let container: [String: Any] = [
+            "version": 1.0,
+            "shaders": self.shaders,
+            "functionsArgumentTypes": self.functionsArgumentTypes,
+        ]
+
+        return try? JSONSerialization.data(withJSONObject: container)
     }
 
     public func makeFunction(name: String) -> Function? {
