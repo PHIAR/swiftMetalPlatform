@@ -244,6 +244,8 @@ public enum PixelFormat: Int {
     case rgba8Unorm
     case rgba16Float
     case rgba32Float
+    case rgba32Sint
+    case rgba32Uint
 }
 
 public enum PrimitiveType {

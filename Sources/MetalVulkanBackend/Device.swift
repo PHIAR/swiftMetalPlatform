@@ -32,6 +32,8 @@ internal extension PixelFormat {
         .rgba8Unorm: .r8g8b8a8UNorm,
         .rgba16Float: .r16g16b16a16SFloat,
         .rgba32Float: .r32g32b32a32SFloat,
+        .rgba32Sint: .r32g32b32a32SInt,
+        .rgba32Uint: .r32g32b32a32UInt,
     ]
 
     func toVulkanFormat() -> VulkanFormat {
