@@ -204,7 +204,7 @@ internal final class VkMetalDevice: Device {
         precondition(privateMemoryTypeIndex != -1)
         precondition(sharedMemoryTypeIndex != -1)
 
-        let maxDescriptorSets = 2048
+        let maxDescriptorSets = 4096
         let poolSizes = [
             VkDescriptorPoolSize(type: VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
                                  descriptorCount: 128),
