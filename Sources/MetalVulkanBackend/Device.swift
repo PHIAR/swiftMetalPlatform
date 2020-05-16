@@ -362,6 +362,11 @@ internal final class VkMetalDevice: Device {
         }
     }
 
+    public func makeLibrary(data: Data) throws -> Library {
+        return VkMetalLibrary(device: self,
+                              data: data)
+    }
+
     public func makeLibrary(filepath: String) throws -> Library {
         let _data = try Data(contentsOf: URL(fileURLWithPath: filepath))
         let data = _data.withUnsafeBytes { DispatchData(bytes: UnsafeRawBufferPointer(start: $0.baseAddress!,

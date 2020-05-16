@@ -1,6 +1,6 @@
 import Foundation
 
-public enum FunctionArgumentType {
+public enum FunctionArgumentType: Int {
     case unknown
     case buffer
     case constant
@@ -50,6 +50,8 @@ public protocol Device {
     func makeHeap(descriptor: HeapDescriptor) -> Heap?
 
     func makeLibrary(data: __DispatchData) throws -> Library
+
+    func makeLibrary(data: Data) throws -> Library
 
     func makeLibrary(filepath: String) throws -> Library
 

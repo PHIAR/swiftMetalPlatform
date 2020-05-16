@@ -36,7 +36,12 @@ internal final class VkMetalLibrary: Library {
         let container = try! JSONSerialization.jsonObject(with: data,
                                                           options: []) as! [String: Any]
         let shaders = container["shaders"] as! [String: [UInt32]]
-        let functionsArgumentTypes = container["functionsArgumentTypes"] as! [String: FunctionArgumentTypes]
+        let _functionsArgumentTypes = container["functionsArgumentTypes"] as! [String: [Int]]
+        var functionsArgumentTypes: [String: FunctionArgumentTypes] = [:]
+
+        for functionArgumentTypes in _functionsArgumentTypes {
+            functionsArgumentTypes[functionArgumentTypes.key] = functionArgumentTypes.value.map { FunctionArgumentType(rawValue: $0)! }
+        }
 
         self.init(device: device,
                   shaders: shaders,
@@ -52,10 +57,16 @@ internal final class VkMetalLibrary: Library {
     }
 
     public func getData() -> Data? {
+        var functionsArgumentTypes: [String: [Int]] = [:]
+
+        for functionArgumentTypes in self.functionsArgumentTypes {
+            functionsArgumentTypes[functionArgumentTypes.key] = functionArgumentTypes.value.map { $0.rawValue }
+        }
+
         let container: [String: Any] = [
             "version": 1.0,
             "shaders": self.shaders,
-            "functionsArgumentTypes": self.functionsArgumentTypes,
+            "functionsArgumentTypes": functionsArgumentTypes,
         ]
 
         return try? JSONSerialization.data(withJSONObject: container)
