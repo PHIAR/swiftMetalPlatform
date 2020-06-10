@@ -4,6 +4,22 @@ import Dispatch
 public let MTLCopyAllDevices = MetalCopyAllDevices
 public let MTLCreateSystemDefaultDevice = MetalCreateSystemDefaultDevice
 
+public func MTLOriginMake(_ x: Int,
+                          _ y: Int,
+                          _ z: Int) -> MTLOrigin {
+    return MTLOrigin(x: x,
+                     y: y,
+                     z: z)
+}
+
+public func MTLRegionMake2D(_ x: Int,
+                            _ y: Int,
+                            _ width: Int,
+                            _ height: Int) -> MTLRegion {
+    return MTLRegion(origin: MTLOriginMake(x, y, 0),
+                     size: MTLSizeMake(width, height, 1))
+}
+
 public func MTLSizeMake(_ width: Int = 0,
                         _ height: Int = 0,
                         _ depth: Int = 0) -> MTLSize {
