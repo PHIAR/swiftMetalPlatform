@@ -261,6 +261,13 @@ internal final class VkMetalDevice: Device {
     }
 
     public func makeBuffer(bytes: UnsafeRawPointer,
+                           length: Int) -> Buffer? {
+        return self.makeBuffer(bytes: bytes,
+                               length: length,
+                               options: [])
+    }
+
+    public func makeBuffer(bytes: UnsafeRawPointer,
                            length: Int,
                            options: ResourceOptions) -> Buffer? {
         return self.makeBuffer(length: length,

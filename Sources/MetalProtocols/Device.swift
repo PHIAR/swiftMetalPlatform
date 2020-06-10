@@ -25,6 +25,9 @@ public protocol Device {
                     options: ResourceOptions) -> Buffer?
 
     func makeBuffer(bytes: UnsafeRawPointer,
+                    length: Int) -> Buffer?
+
+    func makeBuffer(bytes: UnsafeRawPointer,
                     length: Int,
                     options: ResourceOptions) -> Buffer?
 
