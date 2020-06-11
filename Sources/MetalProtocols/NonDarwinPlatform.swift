@@ -231,6 +231,7 @@ public enum PixelFormat: Int {
     case invalid
     case bgr10_xr
     case bgra8Unorm
+    case bgra8Unorm_srgb
     case bgrg422
     case r8Snorm
     case r8Unorm

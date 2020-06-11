@@ -19,6 +19,7 @@ internal extension PixelFormat {
     private static let formatMappings: [PixelFormat: VulkanFormat] = [
         // .bgr10_xr: unsupported
         .bgra8Unorm: .b8g8r8a8UNorm,
+        .bgra8Unorm_srgb: .b8g8r8a8UNorm,
         // .bgrg422: unsupported
         .r8Snorm: .r8SNorm,
         .r8Unorm: .r8UNorm,
