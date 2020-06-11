@@ -10,7 +10,7 @@ public enum FunctionArgumentType: Int {
 
 public typealias FunctionArgumentTypes = [FunctionArgumentType]
 
-public protocol Device {
+public protocol Device: class {
     var isHeadless: Bool { get }
     var isLowPower: Bool { get }
     var isRemovable: Bool { get }

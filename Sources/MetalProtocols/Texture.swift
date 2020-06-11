@@ -7,6 +7,7 @@ public protocol Texture: Resource {
     var mipmapLevelCount: Int { get }
     var sampleCount: Int { get }
     var arrayLength: Int { get }
+    var usage: TextureUsage { get }
 
     func getBytes(_ pixelBytes:UnsafeMutableRawPointer,
                   bytesPerRow: Int,
@@ -19,6 +20,8 @@ public protocol Texture: Resource {
                   from: Region,
                   mipmapLevel: Int,
                   slice: Int)
+
+    func makeTextureView(pixelFormat: PixelFormat) -> Texture?
 
     func replace(region: Region,
                  mipmapLevel: Int,

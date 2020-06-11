@@ -3,4 +3,6 @@ public protocol CommandEncoder {
     var label: String? { get nonmutating set }
 
     func endEncoding()
+    func pushDebugGroup(_ string: String)
+    func popDebugGroup()
 }

@@ -15,6 +15,7 @@ internal final class VkMetalTexture: VkMetalResource,
     private let _sampleCount: Int
     private let _arrayLength: Int
     private var layout: VulkanImageLayout = .undefined
+    private let _usage: TextureUsage
 
     public override var description: String {
         return super.description + " type: \(self.textureType) format: \(self.pixelFormat) size: \(self.width)x\(self.height)x\(self.depth)))"
@@ -52,6 +53,9 @@ internal final class VkMetalTexture: VkMetalResource,
         return self._arrayLength
     }
 
+    public var usage: TextureUsage {
+        return self._usage
+    }
 
     internal init(device: VkMetalDevice,
                   descriptor: TextureDescriptor,
@@ -61,6 +65,7 @@ internal final class VkMetalTexture: VkMetalResource,
                                 height: UInt32(descriptor.height),
                                 depth: UInt32(max(1, descriptor.depth)))
         let textureType = descriptor.textureType
+        let usage = descriptor.usage
         let viewType = textureType.toVulkanImageViewType()
         let pixelFormat = descriptor.pixelFormat
         let format = pixelFormat.toVulkanFormat()
@@ -94,6 +99,7 @@ internal final class VkMetalTexture: VkMetalResource,
         self._mipmapLevelCount = mipLevels
         self._sampleCount = 1
         self._arrayLength = arrayLayers
+        self._usage = usage
         super.init(device: device)
     }
 
@@ -238,6 +244,10 @@ internal final class VkMetalTexture: VkMetalResource,
                          from: Region,
                          mipmapLevel: Int,
                          slice: Int) {
+    }
+
+    public func makeTextureView(pixelFormat: PixelFormat) -> Texture? {
+        return nil
     }
 
     public func replace(region: Region,

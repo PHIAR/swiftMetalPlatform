@@ -108,4 +108,10 @@ internal class VkMetalCommandEncoder: VkMetalObject,
 
     public func endEncoding() {
     }
+
+    public func pushDebugGroup(_ string: String) {
+    }
+
+    public func popDebugGroup() {
+    }
 }

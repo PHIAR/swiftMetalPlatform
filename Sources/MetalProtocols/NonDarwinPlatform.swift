@@ -243,6 +243,7 @@ public enum PixelFormat: Int {
     case rg32Float
     case rgba8Snorm
     case rgba8Unorm
+    case rgba8Unorm_srgb
     case rgba16Float
     case rgba32Float
     case rgba32Sint
@@ -725,6 +726,7 @@ public class RenderPassAttachmentDescriptor {
     public var texture: Texture? = nil
     public var loadAction: LoadAction = .dontCare
     public var storeAction: StoreAction = .dontCare
+    public var resolveTexture: Texture? = nil
 }
 
 public class RenderPassColorAttachmentDescriptor: RenderPassAttachmentDescriptor {
